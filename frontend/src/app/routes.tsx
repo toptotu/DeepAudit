@@ -10,6 +10,8 @@ import AdminDashboard from "@/pages/AdminDashboard";
 import Account from "@/pages/Account";
 import AuditRules from "@/pages/AuditRules";
 import PromptManager from "@/pages/PromptManager";
+import Skills from "@/pages/Skills";
+import McpManager from "@/pages/McpManager";
 import type { ReactNode } from 'react';
 
 export interface RouteConfig {
@@ -78,6 +80,18 @@ const routes: RouteConfig[] = [
     name: "提示词管理",
     path: "/prompts",
     element: <PromptManager />,
+    visible: true,
+  },
+  {
+    name: "Skills 管理",
+    path: "/skills",
+    element: <Skills />,
+    visible: true,
+  },
+  {
+    name: "MCP 管理",
+    path: "/mcp",
+    element: <McpManager />,
     visible: true,
   },
   {

@@ -23,6 +23,8 @@ import {
     Shield,
     MessageSquare,
     Bot,
+    Package,
+    Plug,
 } from "lucide-react";
 import routes from "@/app/routes";
 import { version } from "../../../package.json";
@@ -36,6 +38,8 @@ const routeIcons: Record<string, React.ReactNode> = {
     "/audit-tasks": <ListTodo className="w-[18px] h-[18px]" />,
     "/audit-rules": <Shield className="w-[18px] h-[18px]" />,
     "/prompts": <MessageSquare className="w-[18px] h-[18px]" />,
+    "/skills": <Package className="w-[18px] h-[18px]" />,
+    "/mcp": <Plug className="w-[18px] h-[18px]" />,
     "/admin": <Settings className="w-[18px] h-[18px]" />,
     "/recycle-bin": <Trash2 className="w-[18px] h-[18px]" />,
 };
