@@ -134,7 +134,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                                 >
                                     <img
                                         src="/logo_deepaudit.png"
-                                        alt="DeepAudit"
+                                        alt="GoDeepAudit"
                                         className="w-6 h-6 object-contain transition-transform duration-300 group-hover:scale-110"
                                     />
                                 </div>
@@ -148,8 +148,8 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                                     className="text-xl font-bold tracking-wider font-mono leading-tight"
                                     style={{ textShadow: '0 0 25px rgba(255,107,44,0.4)' }}
                                 >
-                                    <span className="text-primary">DEEP</span>
-                                    <span style={{ color: 'var(--cyber-text)' }}>AUDIT</span>
+                                    <span className="text-primary">GO</span>
+                                    <span style={{ color: 'var(--cyber-text)' }}>DEEPAUDIT</span>
                                 </div>
                             </div>
                         </Link>

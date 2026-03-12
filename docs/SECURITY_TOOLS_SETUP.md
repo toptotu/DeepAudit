@@ -1,6 +1,6 @@
-# DeepAudit 安全工具安装指南
+# GoDeepAudit 安全工具安装指南
 
-本文档介绍如何一键安装 DeepAudit Agent 审计所需的外部安全工具和沙盒环境。
+本文档介绍如何一键安装 GoDeepAudit Agent 审计所需的外部安全工具和沙盒环境。
 
 ## 安装的工具
 
@@ -61,7 +61,7 @@ cd C:\path\to\XCodeReviewer
 1. **全部安装 (推荐)** - 安装所有工具 + 构建 Docker 沙盒
 2. **仅 Python 工具** - `pip install semgrep bandit safety`
 3. **仅系统工具** - 下载 gitleaks, osv-scanner 二进制
-4. **仅 Docker 沙盒** - 构建 `deepaudit-sandbox:latest` 镜像
+4. **仅 Docker 沙盒** - 构建 `godeepaudit-sandbox:latest` 镜像
 5. **仅验证安装状态** - 检查已安装的工具
 
 ## 手动安装
@@ -112,10 +112,10 @@ winget install --id=Gitleaks.Gitleaks -e
 
 ```bash
 cd docker/sandbox
-docker build -t deepaudit-sandbox:latest .
+docker build -t godeepaudit-sandbox:latest .
 
 # 验证
-docker run --rm deepaudit-sandbox:latest python3 --version
+docker run --rm godeepaudit-sandbox:latest python3 --version
 ```
 
 ## 环境配置
@@ -124,7 +124,7 @@ docker run --rm deepaudit-sandbox:latest python3 --version
 
 ```env
 # 沙盒配置
-SANDBOX_IMAGE=deepaudit-sandbox:latest
+SANDBOX_IMAGE=godeepaudit-sandbox:latest
 SANDBOX_MEMORY_LIMIT=512m
 SANDBOX_CPU_LIMIT=1.0
 SANDBOX_TIMEOUT=60
@@ -144,7 +144,7 @@ gitleaks version
 osv-scanner --version
 
 # 检查 Docker 沙盒
-docker image inspect deepaudit-sandbox:latest
+docker image inspect godeepaudit-sandbox:latest
 ```
 
 ## 常见问题
@@ -160,7 +160,7 @@ python3 -m pip install semgrep bandit safety
 
 重启终端或手动添加工具目录到系统 PATH：
 ```
-%LOCALAPPDATA%\DeepAudit\tools
+%LOCALAPPDATA%\GoDeepAudit\tools
 ```
 
 ### Q: Docker 构建失败？

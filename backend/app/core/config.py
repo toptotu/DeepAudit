@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "DeepAudit"
+    PROJECT_NAME: str = "GoDeepAudit"
     API_V1_STR: str = "/api/v1"
     
     # SECURITY
@@ -109,7 +109,7 @@ class Settings(BaseSettings):
     AGENT_TIMEOUT_SECONDS: int = 1800  # Agent 超时时间（30分钟）
     
     # 沙箱配置（必须）
-    SANDBOX_IMAGE: str = "deepaudit/sandbox:latest"  # 沙箱 Docker 镜像
+    SANDBOX_IMAGE: str = "godeepaudit/sandbox:latest"  # 沙箱 Docker 镜像
     SANDBOX_MEMORY_LIMIT: str = "512m"  # 沙箱内存限制
     SANDBOX_CPU_LIMIT: float = 1.0  # 沙箱 CPU 限制
     SANDBOX_TIMEOUT: int = 60  # 沙箱命令超时（秒）

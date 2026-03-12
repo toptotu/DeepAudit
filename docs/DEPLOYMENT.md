@@ -1,6 +1,6 @@
 # 部署指南
 
-本文档详细介绍 DeepAudit v3.0.0 的各种部署方式，包括 Docker Compose 一键部署、Agent 审计模式部署和本地开发环境搭建。
+本文档详细介绍 GoDeepAudit v3.0.0 的各种部署方式，包括 Docker Compose 一键部署、Agent 审计模式部署和本地开发环境搭建。
 
 ## 目录
 
@@ -76,7 +76,7 @@ cp backend/env.example backend/.env
 POSTGRES_SERVER=db
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
-POSTGRES_DB=deepaudit
+POSTGRES_DB=godeepaudit
 
 # 安全配置（生产环境请修改）
 SECRET_KEY=your-super-secret-key-change-this-in-production
@@ -133,7 +133,7 @@ docker compose logs -f backend
 
 # 进入容器调试
 docker compose exec backend sh
-docker compose exec db psql -U postgres -d deepaudit
+docker compose exec db psql -U postgres -d godeepaudit
 ```
 
 ---
@@ -193,7 +193,7 @@ cd docker/sandbox
 ./build.sh
 
 # 验证镜像构建成功
-docker images | grep deepaudit-sandbox
+docker images | grep godeepaudit-sandbox
 ```
 
 沙箱镜像包含：
@@ -300,15 +300,15 @@ server {
 ```bash
 # 方式一：使用 Docker 启动 PostgreSQL（推荐）
 docker run -d \
-  --name deepaudit-db \
+  --name godeepaudit-db \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=deepaudit \
+  -e POSTGRES_DB=godeepaudit \
   -p 5432:5432 \
   postgres:15-alpine
 
 # 方式二：使用本地 PostgreSQL
-createdb deepaudit
+createdb godeepaudit
 ```
 
 ### 后端启动
@@ -376,7 +376,7 @@ uv run ruff format app
 
 ## 数据存储
 
-DeepAudit 采用前后端分离架构，所有数据存储在后端 PostgreSQL 数据库中。
+GoDeepAudit 采用前后端分离架构，所有数据存储在后端 PostgreSQL 数据库中。
 
 ### 数据管理
 
@@ -391,10 +391,10 @@ DeepAudit 采用前后端分离架构，所有数据存储在后端 PostgreSQL �
 
 ```bash
 # 导出 PostgreSQL 数据
-docker compose exec db pg_dump -U postgres deepaudit > backup.sql
+docker compose exec db pg_dump -U postgres godeepaudit > backup.sql
 
 # 恢复数据
-docker compose exec -T db psql -U postgres deepaudit < backup.sql
+docker compose exec -T db psql -U postgres godeepaudit < backup.sql
 ```
 
 ---

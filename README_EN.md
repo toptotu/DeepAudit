@@ -1,11 +1,11 @@
-# DeepAudit - Your AI Security Audit Team, Making Vulnerability Discovery Accessible
+# GoDeepAudit - Your AI Security Audit Team, Making Vulnerability Discovery Accessible
 
 <p align="center">
   <a href="README.md">简体中文</a> | <strong>English</strong>
 </p>
 
 <div style="width: 100%; max-width: 600px; margin: 0 auto;">
-  <img src="frontend/public/images/logo.png" alt="DeepAudit Logo" style="width: 100%; height: auto; display: block; margin: 0 auto;">
+  <img src="frontend/public/images/logo.png" alt="GoDeepAudit Logo" style="width: 100%; height: auto; display: block; margin: 0 auto;">
 </div>
 
 <div align="center">
@@ -27,7 +27,7 @@
 </div>
 
 <div align="center">
-  <img src="frontend/public/DeepAudit.gif" alt="DeepAudit Demo" width="90%">
+  <img src="frontend/public/DeepAudit.gif" alt="GoDeepAudit Demo" width="90%">
 </div>
 
 ---
@@ -89,22 +89,22 @@
 
 ## Overview
 
-**DeepAudit** is a next-generation code security audit platform based on **Multi-Agent collaborative architecture**. It's not just a static scanning tool, but simulates the thinking patterns of security experts through autonomous collaboration of multiple agents (**Orchestrator**, **Recon**, **Analysis**, **Verification**), achieving deep code understanding, vulnerability discovery, and **automated sandbox PoC verification**.
+**GoDeepAudit** is a next-generation code security audit platform based on **Multi-Agent collaborative architecture**. It's not just a static scanning tool, but simulates the thinking patterns of security experts through autonomous collaboration of multiple agents (**Orchestrator**, **Recon**, **Analysis**, **Verification**), achieving deep code understanding, vulnerability discovery, and **automated sandbox PoC verification**.
 
 We are committed to solving three major pain points of traditional SAST tools:
 - **High false positive rate** — Lack of semantic understanding, massive false positives consume manpower
 - **Business logic blind spots** — Cannot understand cross-file calls and complex logic
 - **Lack of verification methods** — Don't know if vulnerabilities are actually exploitable
 
-Users only need to import a project, and DeepAudit automatically starts working: identify tech stack → analyze potential risks → generate scripts → sandbox verification → generate report, ultimately outputting a professional audit report.
+Users only need to import a project, and GoDeepAudit automatically starts working: identify tech stack → analyze potential risks → generate scripts → sandbox verification → generate report, ultimately outputting a professional audit report.
 
 > **Core Philosophy**: Let AI attack like a hacker, defend like an expert.
 
-## Why Choose DeepAudit?
+## Why Choose GoDeepAudit?
 
 <div align="center">
 
-| Traditional Audit Pain Points | DeepAudit Solutions |
+| Traditional Audit Pain Points | GoDeepAudit Solutions |
 | :--- | :--- |
 | **Low manual audit efficiency**<br>Can't keep up with CI/CD iteration speed, slowing release process | **Multi-Agent Autonomous Audit**<br>AI automatically orchestrates audit strategies, 24/7 automated execution |
 | **Too many false positives**<br>Lack of semantic understanding, spending lots of time cleaning noise daily | **RAG Knowledge Enhancement**<br>Combining code semantics with context, significantly reducing false positives |
@@ -119,10 +119,10 @@ Users only need to import a project, and DeepAudit automatically starts working:
 
 ### Architecture Diagram
 
-DeepAudit adopts microservices architecture, driven by the Multi-Agent engine at its core.
+GoDeepAudit adopts microservices architecture, driven by the Multi-Agent engine at its core.
 
 <div align="center">
-<img src="frontend/public/images/README-show/架构图.png" alt="DeepAudit Architecture" width="90%">
+<img src="frontend/public/images/README-show/架构图.png" alt="GoDeepAudit Architecture" width="90%">
 </div>
 
 ### Audit Workflow
@@ -138,7 +138,7 @@ DeepAudit adopts microservices architecture, driven by the Multi-Agent engine at
 ### Project Structure
 
 ```text
-DeepAudit/
+GoDeepAudit/
 ├── backend/                        # Python FastAPI Backend
 │   ├── app/
 │   │   ├── agents/                 # Multi-Agent Core Logic
@@ -263,7 +263,7 @@ pnpm dev
 Development mode requires pulling the sandbox image locally:
 
 ```bash
-docker pull ghcr.io/lintsinghua/deepaudit-sandbox:latest
+docker pull ghcr.io/lintsinghua/godeepaudit-sandbox:latest
 ```
 
 ---

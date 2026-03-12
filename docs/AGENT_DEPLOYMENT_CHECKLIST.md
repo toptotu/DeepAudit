@@ -1,4 +1,4 @@
-# DeepAudit Agent 审计功能部署清单
+# GoDeepAudit Agent 审计功能部署清单
 
 ## 📋 生产部署前必须完成的检查
 
@@ -49,10 +49,10 @@ alembic upgrade head
 
 ```bash
 # 创建向量数据库目录
-mkdir -p /var/data/deepaudit/vector_db
+mkdir -p /var/data/godeepaudit/vector_db
 
 # 在 .env 中配置
-VECTOR_DB_PATH=/var/data/deepaudit/vector_db
+VECTOR_DB_PATH=/var/data/godeepaudit/vector_db
 ```
 
 ### 5. Docker 沙箱（可选）

@@ -1,5 +1,5 @@
 # =============================================
-# DeepAudit v3.0.4 生产环境一键部署配置（国内加速版）
+# GoDeepAudit v3.0.4 生产环境一键部署配置（国内加速版）
 # =============================================
 # 使用南京大学镜像站加速拉取 GHCR 镜像
 # 部署命令: curl -fsSL https://raw.githubusercontent.com/lintsinghua/DeepAudit/main/docker-compose.prod.cn.yml | docker compose -f - up -d
@@ -23,7 +23,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - deepaudit-network
+      - godeepaudit-network
 
   redis:
     image: redis:7-alpine
@@ -36,10 +36,10 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - deepaudit-network
+      - godeepaudit-network
 
   backend:
-    image: ghcr.nju.edu.cn/lintsinghua/deepaudit-backend:latest
+    image: ghcr.nju.edu.cn/lintsinghua/godeepaudit-backend:latest
     restart: unless-stopped
     volumes:
       - backend_uploads:/app/uploads
@@ -51,7 +51,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - AGENT_ENABLED=true
       - SANDBOX_ENABLED=true
-      - SANDBOX_IMAGE=ghcr.nju.edu.cn/lintsinghua/deepaudit-sandbox:latest
+      - SANDBOX_IMAGE=ghcr.nju.edu.cn/lintsinghua/godeepaudit-sandbox:latest
       # LLM 配置 - 请根据需要修改
       - LLM_PROVIDER=${LLM_PROVIDER:-openai}
       - LLM_MODEL=${LLM_MODEL:-gpt-4o}
@@ -69,11 +69,11 @@ services:
       db-migrate:
         condition: service_completed_successfully
     networks:
-      - deepaudit-network
+      - godeepaudit-network
 
   # 数据库迁移服务 - 在后端启动前自动执行
   db-migrate:
-    image: ghcr.nju.edu.cn/lintsinghua/deepaudit-backend:latest
+    image: ghcr.nju.edu.cn/lintsinghua/godeepaudit-backend:latest
     restart: "no"
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/deepaudit
@@ -82,10 +82,10 @@ services:
       db:
         condition: service_healthy
     networks:
-      - deepaudit-network
+      - godeepaudit-network
 
   frontend:
-    image: ghcr.nju.edu.cn/lintsinghua/deepaudit-frontend:latest
+    image: ghcr.nju.edu.cn/lintsinghua/godeepaudit-frontend:latest
     restart: unless-stopped
     ports:
       - "3000:80"
@@ -99,16 +99,16 @@ services:
     depends_on:
       - backend
     networks:
-      - deepaudit-network
+      - godeepaudit-network
 
   # 预拉取沙箱镜像（后端会按需调用）
   sandbox-pull:
-    image: ghcr.nju.edu.cn/lintsinghua/deepaudit-sandbox:latest
+    image: ghcr.nju.edu.cn/lintsinghua/godeepaudit-sandbox:latest
     restart: "no"
     command: echo "Sandbox image ready"
 
 networks:
-  deepaudit-network:
+  godeepaudit-network:
     driver: bridge
 
 volumes:

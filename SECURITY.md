@@ -52,7 +52,7 @@
 
 1. **邮箱报告（推荐）**
    - 发送邮件至: lintsinghua@qq.com
-   - 邮件标题请注明: `[Security] DeepAudit 安全漏洞报告`
+   - 邮件标题请注明: `[Security] GoDeepAudit 安全漏洞报告`
 
 2. **GitHub Issues**
    - 地址: [GitHub Issues](https://github.com/lintsinghua/DeepAudit/issues)

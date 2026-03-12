@@ -1,6 +1,6 @@
 # 常见问题 (FAQ)
 
-本文档收集了 DeepAudit 使用过程中的常见问题和解决方案。
+本文档收集了 GoDeepAudit 使用过程中的常见问题和解决方案。
 
 ## 目录
 
@@ -49,7 +49,7 @@ docker-compose up -d
 
 ### Q: 支持哪些编程语言？
 
-DeepAudit 支持所有主流编程语言的代码分析，包括但不限于：
+GoDeepAudit 支持所有主流编程语言的代码分析，包括但不限于：
 
 - **Web**: JavaScript, TypeScript, HTML, CSS
 - **后端**: Python, Java, Go, Rust, C/C++, C#
@@ -376,10 +376,10 @@ Ollama 本地模型没有网络延迟，适合大量文件分析。
 
 ```bash
 # 导出数据
-docker-compose exec db pg_dump -U postgres deepaudit > backup.sql
+docker-compose exec db pg_dump -U postgres godeepaudit > backup.sql
 
 # 恢复数据
-docker-compose exec -T db psql -U postgres deepaudit < backup.sql
+docker-compose exec -T db psql -U postgres godeepaudit < backup.sql
 ```
 
 ### Q: 如何恢复数据？

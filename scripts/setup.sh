@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# DeepAudit 项目设置脚本
+# GoDeepAudit 项目设置脚本
 # 用于快速设置开发环境
 
 set -e
 
-echo "🚀 DeepAudit 项目设置开始..."
+echo "🚀 GoDeepAudit 项目设置开始..."
 
 # 检查 Node.js 版本
 echo "📋 检查 Node.js 版本..."

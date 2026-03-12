@@ -1,3 +1,3 @@
-# DeepAudit Backend
+# GoDeepAudit Backend
 
 AI-Powered Code Security Audit Platform Backend Service.
