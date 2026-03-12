@@ -1,16 +1,16 @@
-# DeepAudit: System Architecture for Academic Paper
+# GoDeepAudit: System Architecture for Academic Paper
 
 This document provides the system architecture description suitable for top-tier academic conferences (ICSE, FSE, CCS, S&P, USENIX Security, etc.).
 
 ## Architecture Diagram
 
-![DeepAudit Architecture](images/deepaudit_architecture.png)
+![GoDeepAudit Architecture](images/godeepaudit_architecture.png)
 
 ---
 
 ## System Overview
 
-**DeepAudit** is an LLM-driven intelligent code security audit system that employs a **hierarchical multi-agent architecture** with **Retrieval-Augmented Generation (RAG)** and **sandbox-based vulnerability verification**.
+**GoDeepAudit** is an LLM-driven intelligent code security audit system that employs a **hierarchical multi-agent architecture** with **Retrieval-Augmented Generation (RAG)** and **sandbox-based vulnerability verification**.
 
 ### Key Contributions
 
@@ -182,7 +182,7 @@ This document provides the system architecture description suitable for top-tier
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           DeepAudit Data Flow                                │
+│                           GoDeepAudit Data Flow                                │
 └─────────────────────────────────────────────────────────────────────────────┘
 
    ┌──────────┐                                              ┌──────────────┐
@@ -319,7 +319,7 @@ For academic evaluation, we suggest the following metrics:
 | Semgrep | ✗ | ✗ | ✗ | ✗ |
 | Snyk Code | ✗ | ✗ | ✗ | Partial |
 | GitHub Copilot | ✗ | ✗ | ✗ | ✓ |
-| **DeepAudit** | **✓** | **✓** | **✓** | **✓** |
+| **GoDeepAudit** | **✓** | **✓** | **✓** | **✓** |
 
 ---
 
@@ -372,7 +372,7 @@ For LaTeX papers, you can use the following TikZ code:
 \draw[arrow, <->] (orch) -- (llm);
 
 \end{tikzpicture}
-\caption{DeepAudit System Architecture}
+\caption{GoDeepAudit System Architecture}
 \label{fig:architecture}
 \end{figure}
 ```
@@ -381,11 +381,11 @@ For LaTeX papers, you can use the following TikZ code:
 
 ## Citation
 
-If you use DeepAudit in your research, please cite:
+If you use GoDeepAudit in your research, please cite:
 
 ```bibtex
-@software{deepaudit2024,
-  title = {DeepAudit: LLM-Driven Multi-Agent Code Security Audit System with RAG Enhancement and Sandbox Verification},
+@software{godeepaudit2024,
+  title = {GoDeepAudit: LLM-Driven Multi-Agent Code Security Audit System with RAG Enhancement and Sandbox Verification},
   author = {Lin Tsinghua},
   year = {2024},
   url = {https://github.com/lintsinghua/DeepAudit},

@@ -364,7 +364,7 @@ class GitSSHOperations:
                 return {'success': False, 'message': f'无效的分支名: {branch}'}
 
             # 创建临时目录存放SSH密钥
-            temp_dir = tempfile.mkdtemp(prefix='deepaudit_ssh_')
+            temp_dir = tempfile.mkdtemp(prefix='godeepaudit_ssh_')
             key_file = os.path.join(temp_dir, 'id_rsa')
 
             # 写入私钥
@@ -375,7 +375,7 @@ class GitSSHOperations:
             # 使用持久化的known_hosts文件
             known_hosts_file = get_known_hosts_file()
 
-            # 设置Git SSH命令，只使用DeepAudit生成的SSH密钥
+            # 设置Git SSH命令，只使用GoDeepAudit生成的SSH密钥
             env = os.environ.copy()
 
             # 构建SSH命令（使用 shlex.quote 转义路径防止命令注入）
@@ -448,7 +448,7 @@ class GitSSHOperations:
         temp_clone_dir = None
         try:
             # 创建临时克隆目录
-            temp_clone_dir = tempfile.mkdtemp(prefix='deepaudit_clone_')
+            temp_clone_dir = tempfile.mkdtemp(prefix='godeepaudit_clone_')
 
             # 克隆仓库
             clone_result = GitSSHOperations.clone_repo_with_ssh(
@@ -531,7 +531,7 @@ class GitSSHOperations:
                 return {'success': False, 'message': '无效的主机名'}
 
             # 创建临时目录存放密钥
-            temp_dir = tempfile.mkdtemp(prefix='deepaudit_ssh_test_')
+            temp_dir = tempfile.mkdtemp(prefix='godeepaudit_ssh_test_')
             key_file = os.path.join(temp_dir, 'id_rsa')
 
             # 写入私钥

@@ -10,6 +10,8 @@ from .agent_task import (
     AgentTaskStatus, AgentTaskPhase, AgentEventType,
     VulnerabilitySeverity, VulnerabilityType, FindingStatus
 )
+from .skill import Skill
+from .mcp_server import McpServer
 
 
 

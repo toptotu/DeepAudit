@@ -25,7 +25,7 @@ from ..prompts import MULTI_AGENT_RULES, CORE_SECURITY_PRINCIPLES
 logger = logging.getLogger(__name__)
 
 
-ORCHESTRATOR_SYSTEM_PROMPT = """你是 DeepAudit 的编排 Agent，负责**自主**协调整个安全审计流程。
+ORCHESTRATOR_SYSTEM_PROMPT = """你是 GoDeepAudit 的编排 Agent，负责**自主**协调整个安全审计流程。
 
 ## 你的角色
 你是整个审计流程的**大脑**，不是一个机械执行者。你需要：

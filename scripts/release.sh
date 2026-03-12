@@ -122,7 +122,7 @@ fi
 # 更新 docker-compose.yml 中的版本注释
 print_info "更新 docker-compose.yml 版本注释..."
 if [ -f "docker-compose.yml" ]; then
-    sed -i.bak "s/DeepAudit v[0-9]*\.[0-9]*\.[0-9]*/DeepAudit v$NEW_VERSION/" docker-compose.yml
+    sed -i.bak "s/GoDeepAudit v[0-9]*\.[0-9]*\.[0-9]*/GoDeepAudit v$NEW_VERSION/" docker-compose.yml
     rm -f docker-compose.yml.bak
 fi
 

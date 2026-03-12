@@ -23,6 +23,8 @@ import {
     Shield,
     MessageSquare,
     Bot,
+    Package,
+    Plug,
 } from "lucide-react";
 import routes from "@/app/routes";
 import { version } from "../../../package.json";
@@ -36,6 +38,8 @@ const routeIcons: Record<string, React.ReactNode> = {
     "/audit-tasks": <ListTodo className="w-[18px] h-[18px]" />,
     "/audit-rules": <Shield className="w-[18px] h-[18px]" />,
     "/prompts": <MessageSquare className="w-[18px] h-[18px]" />,
+    "/skills": <Package className="w-[18px] h-[18px]" />,
+    "/mcp": <Plug className="w-[18px] h-[18px]" />,
     "/admin": <Settings className="w-[18px] h-[18px]" />,
     "/recycle-bin": <Trash2 className="w-[18px] h-[18px]" />,
 };
@@ -134,7 +138,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                                 >
                                     <img
                                         src="/logo_deepaudit.png"
-                                        alt="DeepAudit"
+                                        alt="GoDeepAudit"
                                         className="w-6 h-6 object-contain transition-transform duration-300 group-hover:scale-110"
                                     />
                                 </div>
@@ -148,8 +152,8 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                                     className="text-xl font-bold tracking-wider font-mono leading-tight"
                                     style={{ textShadow: '0 0 25px rgba(255,107,44,0.4)' }}
                                 >
-                                    <span className="text-primary">DEEP</span>
-                                    <span style={{ color: 'var(--cyber-text)' }}>AUDIT</span>
+                                    <span className="text-primary">GO</span>
+                                    <span style={{ color: 'var(--cyber-text)' }}>DEEPAUDIT</span>
                                 </div>
                             </div>
                         </Link>

@@ -1,5 +1,5 @@
 """
-DeepAudit Agent 审计任务 API
+GoDeepAudit Agent 审计任务 API
 基于 LangGraph 的 Agent 审计
 """
 
@@ -2289,7 +2289,7 @@ async def _get_project_root(
         if is_task_cancelled(task_id):
             raise asyncio.CancelledError("任务已取消")
 
-    base_path = f"/tmp/deepaudit/{task_id}"
+    base_path = f"/tmp/godeepaudit/{task_id}"
 
     # 确保目录存在且为空
     if os.path.exists(base_path):
@@ -2711,7 +2711,7 @@ async def _get_project_root(
 
     # 🔥 智能检测：如果解压后只有一个子目录（常见于 ZIP 文件），
     # 则使用那个子目录作为真正的项目根目录
-    # 例如：/tmp/deepaudit/UUID/PHP-Project/ -> 返回 /tmp/deepaudit/UUID/PHP-Project
+    # 例如：/tmp/godeepaudit/UUID/PHP-Project/ -> 返回 /tmp/godeepaudit/UUID/PHP-Project
     items = os.listdir(base_path)
     # 过滤掉 macOS 产生的 __MACOSX 目录和隐藏文件
     real_items = [item for item in items if not item.startswith('__') and not item.startswith('.')]
@@ -3187,7 +3187,7 @@ async def generate_audit_report(
     md_lines = []
 
     # Header
-    md_lines.append("# DeepAudit 安全审计报告")
+    md_lines.append("# GoDeepAudit 安全审计报告")
     md_lines.append("")
     md_lines.append("---")
     md_lines.append("")
@@ -3426,7 +3426,7 @@ async def generate_audit_report(
     # Footer
     md_lines.append("---")
     md_lines.append("")
-    md_lines.append("*本报告由 DeepAudit - AI 驱动的安全分析系统生成*")
+    md_lines.append("*本报告由 GoDeepAudit - AI 驱动的安全分析系统生成*")
     md_lines.append("")
     content = "\n".join(md_lines)
     

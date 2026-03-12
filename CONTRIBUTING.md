@@ -1,6 +1,6 @@
 # 贡献指南
 
-感谢你对 DeepAudit 的关注！我们热烈欢迎所有形式的贡献，无论是提交 Issue、创建 PR，还是改进文档。
+感谢你对 GoDeepAudit 的关注！我们热烈欢迎所有形式的贡献，无论是提交 Issue、创建 PR，还是改进文档。
 
 ## 目录
 
@@ -74,10 +74,10 @@
 ```bash
 # 使用 Docker 启动 PostgreSQL（推荐）
 docker run -d \
-  --name deepaudit-db \
+  --name godeepaudit-db \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=deepaudit \
+  -e POSTGRES_DB=godeepaudit \
   -p 5432:5432 \
   postgres:15-alpine
 ```
@@ -282,7 +282,7 @@ git push origin feature/your-feature-name
 ## 项目结构
 
 ```
-DeepAudit/
+GoDeepAudit/
 ├── backend/                 # 后端 (FastAPI)
 │   ├── app/
 │   │   ├── api/            # API 路由

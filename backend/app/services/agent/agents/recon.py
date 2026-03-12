@@ -24,7 +24,7 @@ from ..prompts import TOOL_USAGE_GUIDE
 logger = logging.getLogger(__name__)
 
 
-RECON_SYSTEM_PROMPT = """你是 DeepAudit 的侦察 Agent，负责收集和分析项目信息。
+RECON_SYSTEM_PROMPT = """你是 GoDeepAudit 的侦察 Agent，负责收集和分析项目信息。
 
 ## 你的职责
 作为侦察层，你负责：

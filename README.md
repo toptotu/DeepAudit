@@ -1,7 +1,7 @@
-# DeepAudit - 人人拥有的 AI 审计战队，让漏洞挖掘触手可及 🦸‍♂️
+# GoDeepAudit - 人人拥有的 AI 审计战队，让漏洞挖掘触手可及 🦸‍♂️
 
 <div style="width: 100%; max-width: 600px; margin: 0 auto;">
-  <img src="frontend/public/images/logo.png" alt="DeepAudit Logo" style="width: 100%; height: auto; display: block; margin: 0 auto;">
+  <img src="frontend/public/images/logo.png" alt="GoDeepAudit Logo" style="width: 100%; height: auto; display: block; margin: 0 auto;">
 </div>
 
 <div align="center">
@@ -26,7 +26,7 @@
 </div>
 
 <div align="center">
-  <img src="frontend/public/DeepAudit.gif" alt="DeepAudit Demo" width="90%">
+  <img src="frontend/public/DeepAudit.gif" alt="GoDeepAudit Demo" width="90%">
 </div>
 
 ---
@@ -90,7 +90,7 @@
 
 <div align="center">
 
-### **DeepAudit 已成功发现并获得 48 个 CVE 编号，涉及 16 个知名开源项目**
+### **GoDeepAudit 已成功发现并获得 48 个 CVE 编号，涉及 16 个知名开源项目**
 
 </div>
 
@@ -147,30 +147,30 @@
 
 👉 [查看完整 CVE 列表详情](CVEList.md)
 
-> *以上漏洞由 DeepAudit 团队成员 [@ez-lbz](https://github.com/ez-lbz) 使用 DeepAudit 挖掘发现*
+> *以上漏洞由 GoDeepAudit 团队成员 [@ez-lbz](https://github.com/ez-lbz) 使用 GoDeepAudit 挖掘发现*
 
-> 如果您使用 DeepAudit 发现了漏洞，欢迎在  [Issues](https://github.com/lintsinghua/DeepAudit/issues/135)  中留言反馈。您的贡献将极大地丰富这份漏洞列表，非常感谢！
+> 如果您使用 GoDeepAudit 发现了漏洞，欢迎在  [Issues](https://github.com/lintsinghua/DeepAudit/issues/135)  中留言反馈。您的贡献将极大地丰富这份漏洞列表，非常感谢！
 
 ---
 
 ## ⚡ 项目概述
 
-**DeepAudit** 是一个基于 **Multi-Agent 协作架构**的下一代代码安全审计平台。它不仅仅是一个静态扫描工具，而是模拟安全专家的思维模式，通过多个智能体（**Orchestrator**, **Recon**, **Analysis**, **Verification**）的自主协作，实现对代码的深度理解、漏洞挖掘和 **自动化沙箱 PoC 验证**。
+**GoDeepAudit** 是一个基于 **Multi-Agent 协作架构**的下一代代码安全审计平台。它不仅仅是一个静态扫描工具，而是模拟安全专家的思维模式，通过多个智能体（**Orchestrator**, **Recon**, **Analysis**, **Verification**）的自主协作，实现对代码的深度理解、漏洞挖掘和 **自动化沙箱 PoC 验证**。
 
 我们致力于解决传统 SAST 工具的三大痛点：
 - **误报率高** — 缺乏语义理解，大量误报消耗人力
 - **业务逻辑盲点** — 无法理解跨文件调用和复杂逻辑
 - **缺乏验证手段** — 不知道漏洞是否真实可利用
 
-用户只需导入项目，DeepAudit 便全自动开始工作：识别技术栈 → 分析潜在风险 → 生成脚本 → 沙箱验证 → 生成报告，最终输出一份专业审计报告。
+用户只需导入项目，GoDeepAudit 便全自动开始工作：识别技术栈 → 分析潜在风险 → 生成脚本 → 沙箱验证 → 生成报告，最终输出一份专业审计报告。
 
 > **核心理念**: 让 AI 像黑客一样攻击，像专家一样防御。
 
-## 💡 为什么选择 DeepAudit？
+## 💡 为什么选择 GoDeepAudit？
 
 <div align="center">
 
-| 😫 传统审计的痛点 | 💡 DeepAudit 解决方案 |
+| 😫 传统审计的痛点 | 💡 GoDeepAudit 解决方案 |
 | :--- | :--- |
 | **人工审计效率低**<br>跨不上 CI/CD 代码迭代速度，拖慢发布流程 | **🤖 Multi-Agent 自主审计**<br>AI 自动编排审计策略，全天候自动化执行 |
 | **传统工具误报多**<br>缺乏语义理解，每天花费大量时间清洗噪音 | **🧠 RAG 知识库增强**<br>结合代码语义与上下文，大幅降低误报率 |
@@ -185,10 +185,10 @@
 
 ### 整体架构图
 
-DeepAudit 采用微服务架构，核心由 Multi-Agent 引擎驱动。
+GoDeepAudit 采用微服务架构，核心由 Multi-Agent 引擎驱动。
 
 <div align="center">
-<img src="frontend/public/images/README-show/架构图.png" alt="DeepAudit 架构图" width="90%">
+<img src="frontend/public/images/README-show/架构图.png" alt="GoDeepAudit 架构图" width="90%">
 </div>
 
 ### 🔄 审计工作流
@@ -204,7 +204,7 @@ DeepAudit 采用微服务架构，核心由 Multi-Agent 引擎驱动。
 ### 📂 项目代码结构
 
 ```text
-DeepAudit/
+GoDeepAudit/
 ├── backend/                        # Python FastAPI 后端
 │   ├── app/
 │   │   ├── agents/                 # Multi-Agent 核心逻辑
@@ -252,13 +252,13 @@ curl -fsSL https://raw.githubusercontent.com/lintsinghua/DeepAudit/v3.0.0/docker
 
 ```bash
 # 前端镜像
-docker pull ghcr.nju.edu.cn/lintsinghua/deepaudit-frontend:latest
+docker pull ghcr.nju.edu.cn/lintsinghua/godeepaudit-frontend:latest
 
 # 后端镜像
-docker pull ghcr.nju.edu.cn/lintsinghua/deepaudit-backend:latest
+docker pull ghcr.nju.edu.cn/lintsinghua/godeepaudit-backend:latest
 
 # 沙箱镜像
-docker pull ghcr.nju.edu.cn/lintsinghua/deepaudit-sandbox:latest
+docker pull ghcr.nju.edu.cn/lintsinghua/godeepaudit-sandbox:latest
 ```
 </details>
 
@@ -370,10 +370,10 @@ pnpm dev
 
 ```bash
 # 标准拉取
-docker pull ghcr.io/lintsinghua/deepaudit-sandbox:latest
+docker pull ghcr.io/lintsinghua/godeepaudit-sandbox:latest
 
 # 国内加速（南京大学镜像站）
-docker pull ghcr.nju.edu.cn/lintsinghua/deepaudit-sandbox:latest
+docker pull ghcr.nju.edu.cn/lintsinghua/godeepaudit-sandbox:latest
 ```
 
 ---

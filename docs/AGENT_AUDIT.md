@@ -1,8 +1,8 @@
-# DeepAudit Agent 审计模块 v3.0.0
+# GoDeepAudit Agent 审计模块 v3.0.0
 
 ## 概述
 
-Agent 审计模块是 DeepAudit v3.0.0 的核心功能，基于 **Multi-Agent 架构** 实现自主代码安全分析和漏洞验证。
+Agent 审计模块是 GoDeepAudit v3.0.0 的核心功能，基于 **Multi-Agent 架构** 实现自主代码安全分析和漏洞验证。
 
 ### 核心特性
 
@@ -19,7 +19,7 @@ Agent 审计模块是 DeepAudit v3.0.0 的核心功能，基于 **Multi-Agent �
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                     DeepAudit Agent 审计工作流                        │
+│                     GoDeepAudit Agent 审计工作流                        │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │    START                                                            │
@@ -166,7 +166,7 @@ VECTOR_DB_TYPE=chroma
 
 ```env
 SANDBOX_ENABLED=true
-SANDBOX_IMAGE=deepaudit-sandbox:latest
+SANDBOX_IMAGE=godeepaudit-sandbox:latest
 SANDBOX_MEMORY_LIMIT=512m
 SANDBOX_CPU_LIMIT=1.0
 SANDBOX_NETWORK_DISABLED=true
@@ -299,7 +299,7 @@ docker compose logs backend | grep -i agent
 
 ```bash
 # 检查沙箱镜像
-docker images | grep deepaudit-sandbox
+docker images | grep godeepaudit-sandbox
 
 # 重新构建沙箱
 cd docker/sandbox && ./build.sh

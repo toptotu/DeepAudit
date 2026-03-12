@@ -1,12 +1,12 @@
 [project]
-name = "deepaudit-backend"
+name = "godeepaudit-backend"
 version = "3.0.4"
-description = "DeepAudit Backend API - AI-Powered Code Security Audit Platform"
+description = "GoDeepAudit Backend API - AI-Powered Code Security Audit Platform"
 requires-python = ">=3.11"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
-    { name = "DeepAudit Team" }
+    { name = "GoDeepAudit Team" }
 ]
 keywords = ["security", "audit", "code-review", "vulnerability", "ai", "llm"]
 

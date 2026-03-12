@@ -41,7 +41,7 @@ class ReportGenerator:
                     vertical-align: middle;
                 }
                 @top-right {
-                    content: "DeepAudit Audit Report";
+                    content: "GoDeepAudit Audit Report";
                     font-size: 8pt;
                     color: #666;
                     font-family: sans-serif;

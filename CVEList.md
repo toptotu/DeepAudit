@@ -1,6 +1,6 @@
 # CVE 列表
 
-此文件用于维护 DeepAudit 项目扫描并申报得到的 CVE 漏洞列表。
+此文件用于维护 GoDeepAudit 项目扫描并申报得到的 CVE 漏洞列表。
 
 ## 统计概览
 
@@ -66,4 +66,4 @@
 ---
 
 漏洞无先后顺序，默认按照从上到下的报送顺序排列，项目名称首字母大写。
-如果您使用 DeepAudit 发现了漏洞，欢迎在 [Issues](https://github.com/lintsinghua/DeepAudit/issues/135) 中留言反馈。您的贡献将极大地丰富这份漏洞列表，非常感谢！
+如果您使用 GoDeepAudit 发现了漏洞，欢迎在 [Issues](https://github.com/lintsinghua/DeepAudit/issues/135) 中留言反馈。您的贡献将极大地丰富这份漏洞列表，非常感谢！
