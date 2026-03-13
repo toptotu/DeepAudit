@@ -422,7 +422,7 @@ class AgentFinding(Base):
     
     def to_dict(self) -> dict:
         """转换为字典"""
-        return {
+        base = {
             "id": self.id,
             "task_id": self.task_id,
             "vulnerability_type": self.vulnerability_type,
@@ -443,6 +443,19 @@ class AgentFinding(Base):
             "ai_confidence": self.ai_confidence,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
+        # 问题管理增强字段（通过迁移添加，可能不存在）
+        for field in (
+            "reviewer_id", "reviewed_at", "review_notes",
+            "assignee_id", "assigned_at", "due_date",
+            "closed_at", "risk_accepted", "external_id",
+            "external_url", "comments_count",
+        ):
+            val = getattr(self, field, None)
+            if val is not None and hasattr(val, "isoformat"):
+                base[field] = val.isoformat()
+            else:
+                base[field] = val
+        return base
 
 
 class AgentCheckpoint(Base):
