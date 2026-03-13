@@ -10,6 +10,11 @@ from .agent_task import (
     AgentTaskStatus, AgentTaskPhase, AgentEventType,
     VulnerabilitySeverity, VulnerabilityType, FindingStatus
 )
+from .opencode import (
+    OpenCodeProject, OpenCodeAuditSession,
+    OpenCodeSkill, MCPToolConfig, IssueComment,
+    OpenCodeServerStatus, SkillCategory, MCPTransportType, IssueCommentType,
+)
 
 
 
