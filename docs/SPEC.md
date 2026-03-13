@@ -1,9 +1,10 @@
 # VulnHunter — 代码安全审计智能体平台 技术规格说明书
 
-> **Version**: 0.1.0-draft  
+> **Version**: 0.2.0-draft  
 > **Date**: 2026-03-13  
 > **Status**: RFC  
-> **License**: AGPL-3.0
+> **License**: AGPL-3.0  
+> **OpenClaw 兼容**: 基于 ClawHub 22,614 个 Skill 实际分析
 
 ---
 
@@ -134,82 +135,138 @@
 
 ## 4. Skill 体系与 OpenClaw 兼容
 
-### 4.1 Skill 的双重身份
+### 4.1 OpenClaw Skill 的真实形态
 
-VulnHunter 中的 Skill 同时具有两个角色：
+通过分析 ClawHub 上 **22,614 个 Skill**，我们发现 OpenClaw Skill 有两种实际形态：
 
-1. **平台原生 Skill** — 定义审计管线（pipeline phases → 静态扫描 → AI 分析 → 验证）
-2. **OpenClaw 兼容 Skill** — 包含 `skill.yaml` / `SKILL.md`，可直接在 OpenClaw 生态中使用
+**Type A: 纯 SKILL.md（占绝大多数）** — 只有一个 `SKILL.md` 文件，内容是 AI Agent 的行为指令 + 嵌入的代码块。Agent 阅读 Markdown 并按指令行事。
+
+**Type B: SKILL.md + 独立脚本文件（占 ~30%）** — `SKILL.md` + 实际可执行的 Python/Shell/JS 脚本。脚本是独立的 CLI 工具，`SKILL.md` 说明如何调用。
+
+> 注意：`skill.yaml` manifest 格式仅有 214 个 Skill（< 1%）使用，VulnHunter 支持但不以此为设计重心。
 
 ```
-┌────────────────────────────────────────────┐
-│             VulnHunter Skill               │
-│                                            │
-│  ┌──────────────────────────────────────┐  │
-│  │     OpenClaw Manifest Layer          │  │
-│  │                                      │  │
-│  │  skill.yaml                          │  │
-│  │  ├── name, version, author           │  │
-│  │  ├── description                     │  │
-│  │  ├── permissions                     │  │
-│  │  └── entryPoint                      │  │
-│  │                                      │  │
-│  │  SKILL.md  (可选)                     │  │
-│  │  └── frontmatter + instructions      │  │
-│  └──────────────────────────────────────┘  │
-│                                            │
-│  ┌──────────────────────────────────────┐  │
-│  │     VulnHunter Pipeline Layer        │  │
-│  │                                      │  │
-│  │  pipeline.yaml                       │  │
-│  │  ├── phases[]                        │  │
-│  │  │   ├── static_analysis (tools)     │  │
-│  │  │   ├── ai_analysis (agent config)  │  │
-│  │  │   └── verification (sandbox)      │  │
-│  │  ├── output (finding_template)       │  │
-│  │  ├── dependencies[]                  │  │
-│  │  └── parameters[]                    │  │
-│  └──────────────────────────────────────┘  │
-│                                            │
-│  ┌──────────────────────────────────────┐  │
-│  │     Metadata Layer                   │  │
-│  │                                      │  │
-│  │  metadata.yaml                       │  │
-│  │  ├── category (injection, auth ...)  │  │
-│  │  ├── cwe_ids[], owasp_ids[]          │  │
-│  │  ├── severity_range                  │  │
-│  │  ├── supported_languages[]           │  │
-│  │  ├── supported_frameworks[]          │  │
-│  │  └── tags[]                          │  │
-│  └──────────────────────────────────────┘  │
-└────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────┐
+│              VulnHunter Skill 结构                     │
+│                                                       │
+│  ┌───────────────────────────────────────────────┐    │
+│  │  OpenClaw 兼容层（原始文件，完整保留）          │    │
+│  │                                               │    │
+│  │  SKILL.md (必须)                              │    │
+│  │  ├── frontmatter: name, description, metadata │    │
+│  │  └── body: 指令 + 嵌入代码块                  │    │
+│  │                                               │    │
+│  │  脚本文件 (Type B 才有)                        │    │
+│  │  ├── *.py — Python 脚本                       │    │
+│  │  ├── *.sh — Shell 脚本                        │    │
+│  │  ├── *.js / *.ts — JS/TS 脚本                 │    │
+│  │  ├── package.json — Node 依赖                 │    │
+│  │  └── requirements.txt — Python 依赖           │    │
+│  │                                               │    │
+│  │  _meta.json — ClawHub 注册信息                 │    │
+│  └───────────────────────────────────────────────┘    │
+│                                                       │
+│  ┌───────────────────────────────────────────────┐    │
+│  │  VulnHunter 扩展层（自动生成 / 手动配置）      │    │
+│  │                                               │    │
+│  │  pipeline_config (JSONB)                      │    │
+│  │  ├── 从 SKILL.md + 脚本文件自动推断           │    │
+│  │  ├── phases: 嵌入脚本执行 → AI 分析 → 验证    │    │
+│  │  └── 可手动覆盖                               │    │
+│  │                                               │    │
+│  │  metadata (DB fields)                         │    │
+│  │  ├── category — 从 description/tags 推断      │    │
+│  │  ├── cwe_ids, owasp_ids                       │    │
+│  │  ├── supported_languages / frameworks         │    │
+│  │  └── required_bins — 从 metadata.requires 提取 │    │
+│  └───────────────────────────────────────────────┘    │
+└───────────────────────────────────────────────────────┘
 ```
 
 ### 4.2 OpenClaw Skill 导入流程
 
 ```
-ClawHub / 本地 .openclaw Skill
+OpenClaw Skill（ClawHub URL / GitHub / 本地目录 / 粘贴）
          │
          ▼
-┌─────────────────────┐
-│  OpenClaw Importer   │
-│                      │
-│  1. 解析 skill.yaml  │  ← 读取 name, version, author, permissions
-│  2. 解析 SKILL.md    │  ← 提取 frontmatter + 指令
-│  3. 生成 pipeline    │  ← 从 entryPoint / SKILL.md 推断审计管线
-│  4. 映射 metadata    │  ← 从 description/tags 推断 CWE/category
-│  5. 存入数据库       │  ← 创建 Skill 记录
-│  6. 注册到引擎       │  ← 可用于 Profile 组合
-└─────────────────────┘
+┌────────────────────────────────────────────────────┐
+│              Skill Loader                          │
+│                                                    │
+│  1. 检测类型                                       │
+│     ├── 有 SKILL.md + 脚本文件? → Type B          │
+│     ├── 只有 SKILL.md?          → Type A          │
+│     └── 有 skill.yaml?          → Type C (少见)   │
+│                                                    │
+│  2. 解析 SKILL.md                                  │
+│     ├── frontmatter → name, description, metadata  │
+│     ├── body 代码块提取 → embedded_scripts[]       │
+│     └── 工作流段落 → Agent 指令                    │
+│                                                    │
+│  3. 扫描脚本文件                                    │
+│     ├── *.py / *.sh / *.js → script_files[]       │
+│     ├── package.json → node_deps                   │
+│     └── requirements.txt → python_deps             │
+│                                                    │
+│  4. 安全扫描 (30+ 恶意模式)                        │
+│                                                    │
+│  5. 自动生成 pipeline_config                       │
+│     ├── Type A → 嵌入脚本执行 + AI 指令跟随       │
+│     └── Type B → 依赖安装 + 脚本执行 + 输出解析    │
+│                                                    │
+│  6. 推断 metadata                                  │
+│     ├── category ← description + tags 关键字匹配   │
+│     └── required_bins ← metadata.clawdbot.requires │
+│                                                    │
+│  7. 存入数据库 + 文件系统                           │
+└────────────────────────────────────────────────────┘
 ```
 
-对于 OpenClaw 原生 Skill 的 `entryPoint`，VulnHunter 做如下映射：
+### 4.3 OpenClaw Skill 执行机制
 
-| OpenClaw entryPoint.type | VulnHunter 执行方式 |
-|--------------------------|-------------------|
-| `natural` | 将 prompt 作为 Agent system prompt 的一部分注入 |
-| `shell` | 在 Docker Sandbox 中执行 shell 脚本 |
-| `typescript` | 在 Node.js Sandbox 中执行 TS 脚本 |
+#### Type A（纯 Markdown）执行
+
+Agent 阅读 SKILL.md 指令，按工作流步骤行事；同时提取嵌入的代码块在 Sandbox 中执行：
+
+```
+SKILL.md body
+    │
+    ├── 嵌入的 bash 代码块 ──→ Sandbox 逐个执行
+    │   ├── npm audit --json
+    │   ├── pip-audit -r requirements.txt
+    │   ├── grep -rn 'AKIA...' (密钥扫描)
+    │   └── openssl s_client (SSL 检测)
+    │
+    ├── 工作流指令 ──→ 注入 Agent system prompt
+    │   └── Agent 按照步骤进行深度代码分析
+    │
+    └── 两者输出合并 ──→ Finding 列表
+```
+
+#### Type B（有脚本文件）执行
+
+```
+Skill 目录
+    │
+    ├── 1. 依赖安装
+    │   ├── pip install -r requirements.txt
+    │   └── npm install (如有 package.json)
+    │
+    ├── 2. 脚本执行（在 Docker Sandbox 中）
+    │   ├── python3 slither-audit.py /project --format json
+    │   └── 或 node scripts/audit.js /project
+    │
+    ├── 3. 输出解析（多级 fallback）
+    │   ├── 尝试 JSON → 结构化 findings
+    │   ├── 尝试 SARIF
+    │   ├── 尝试 Markdown 报告格式
+    │   ├── 尝试结构化文本 [SEVERITY] file:line msg
+    │   └── LLM Fallback → 从自由文本提取
+    │
+    └── 4. (可选) AI 增强分析
+        └── Agent 基于脚本结果做深度补充
+```
+
+> 完整的 OpenClaw 兼容技术细节见 [SKILL_COMPATIBILITY.md](./SKILL_COMPATIBILITY.md)
 
 ### 4.3 Skill 目录结构
 
@@ -217,21 +274,21 @@ ClawHub / 本地 .openclaw Skill
 skills/
 ├── builtin/                       # 平台内置 Skill
 │   ├── code-recon/
-│   │   ├── skill.yaml             # OpenClaw manifest
-│   │   ├── SKILL.md               # OpenClaw instructions
-│   │   ├── pipeline.yaml          # VulnHunter pipeline
-│   │   └── metadata.yaml          # 分类/兼容性信息
+│   │   ├── SKILL.md               # OpenClaw 兼容的 Skill 指令
+│   │   └── pipeline.yaml          # VulnHunter 管线配置
 │   ├── sql-injection/
-│   │   ├── skill.yaml
-│   │   ├── SKILL.md
+│   │   ├── SKILL.md               # OpenClaw 兼容 + 嵌入检测脚本
 │   │   ├── pipeline.yaml
-│   │   ├── metadata.yaml
 │   │   └── knowledge/             # 知识库
 │   │       ├── patterns.yaml
 │   │       └── references.md
-│   ├── xss-detection/
 │   ├── dependency-audit/
+│   │   ├── SKILL.md
+│   │   ├── scan.py                # 独立 Python 脚本（Type B）
+│   │   ├── requirements.txt
+│   │   └── pipeline.yaml
 │   ├── secret-detection/
+│   ├── xss-detection/
 │   ├── csrf-detection/
 │   ├── ssrf-detection/
 │   ├── path-traversal/
@@ -240,62 +297,110 @@ skills/
 │   ├── crypto-weakness/
 │   ├── api-security/
 │   └── full-audit/                # 组合型 Skill
-│       ├── skill.yaml
-│       ├── pipeline.yaml          # 引用其他所有 Skill
-│       └── metadata.yaml
+│       ├── SKILL.md
+│       └── pipeline.yaml          # 引用其他所有 Skill
 │
 └── imported/                      # 从 OpenClaw/ClawHub 导入的 Skill
     └── {author}/
         └── {skill-name}/
-            ├── skill.yaml
-            ├── SKILL.md
-            └── pipeline.yaml      # 自动生成或手动补充
+            ├── SKILL.md           # 原始 SKILL.md（完整保留）
+            ├── _meta.json         # ClawHub 元数据
+            ├── *.py / *.sh / *.js # 原始脚本文件（如有）
+            ├── package.json       # Node 依赖（如有）
+            ├── requirements.txt   # Python 依赖（如有）
+            └── .vulnhunter/
+                └── pipeline.yaml  # 自动生成的管线
 ```
 
-### 4.4 skill.yaml 完整示例（OpenClaw 兼容）
+### 4.4 内置 Skill SKILL.md 示例（OpenClaw 兼容格式）
 
-```yaml
+以下是内置 SQL 注入检测 Skill 的 `SKILL.md`，同时兼容 OpenClaw 生态和 VulnHunter 管线：
+
+```markdown
+---
 name: sql-injection-detection
-version: 1.2.0
-author: vulnhunter
 description: >
-  Detect SQL injection vulnerabilities including union-based,
-  boolean-based blind, time-based blind, and ORM bypass.
-  Use when auditing database-interacting code.
-  Also covers stored procedures and dynamic query builders.
-license: AGPL-3.0
+  Detect SQL injection vulnerabilities in source code.
+  Use when auditing database-interacting code, checking raw queries,
+  string concatenation in SQL, ORM bypass, and stored procedures.
+  Also covers blind injection and second-order injection.
+metadata:
+  clawdbot:
+    emoji: "💉"
+    requires:
+      anyBins: ["semgrep", "python3"]
+    os: ["linux", "darwin"]
+tags: [sql-injection, database, security, owasp-a03]
+---
 
-permissions:
-  - filesystem   # 读取项目源码
-  - shell        # 运行 semgrep/bandit
+# SQL Injection Detection
 
-entryPoint:
-  type: natural
-  prompt: |
-    You are a SQL injection detection specialist.
-    Analyze the provided source code for SQL injection vulnerabilities.
-    Focus on: raw SQL queries, string concatenation in queries,
-    f-string/format() in SQL, ORM raw methods, stored procedure calls.
-    For each finding, report the file, line, severity, and remediation.
+## When to Use
+- Auditing database-interacting code
+- Reviewing raw SQL queries and ORM usage
+- Checking for string concatenation/interpolation in queries
+- Scanning for second-order injection vectors
 
-config:
-  scan_depth:
-    type: string
-    required: false
-    default: normal
-    description: "Scan depth: shallow, normal, or deep"
-  include_orm:
-    type: boolean
-    required: false
-    default: true
-    description: "Whether to scan ORM layer for injection risks"
+## Workflow
 
-triggers:
-  keywords:
-    - sql injection
-    - database security
-    - query audit
+### Step 1: Static Scan with Semgrep
+
+` ` `bash
+semgrep --config p/sql-injection --config p/python-sql-injection \
+  --severity WARNING --severity ERROR \
+  --json --output /tmp/semgrep-sqli.json \
+  $PROJECT_PATH
+` ` `
+
+### Step 2: Python-specific scan with Bandit
+
+` ` `bash
+bandit -r $PROJECT_PATH -t B608,B610,B611 -f json -o /tmp/bandit-sqli.json 2>/dev/null || true
+` ` `
+
+### Step 3: Pattern-based detection
+
+` ` `bash
+# Raw SQL with string concatenation/interpolation
+grep -rn "execute.*f\"\|execute.*format\|execute.*%s\|execute.*+" \
+  --include='*.py' --include='*.java' --include='*.php' \
+  --include='*.js' --include='*.ts' --include='*.rb' \
+  $PROJECT_PATH | grep -iv 'test\|mock\|example'
+
+# ORM raw query methods
+grep -rn "raw_query\|RawSQL\|text(\|nativeQuery\|createNativeQuery\|raw(" \
+  --include='*.py' --include='*.java' --include='*.js' \
+  $PROJECT_PATH
+` ` `
+
+### Step 4: AI Deep Analysis
+
+Focus on:
+- Functions that build SQL queries from user input
+- Data flow from request parameters to query execution
+- ORM `.extra()`, `.raw()`, `RawSQL()` usage
+- Stored procedure calls with dynamic parameters
+- Second-order injection (data stored → later used in query)
+
+For each finding, report:
+- File path and line number
+- The vulnerable code snippet
+- How user input reaches the query (data flow)
+- Severity: critical (direct concatenation), high (indirect), medium (ORM bypass)
+- Specific remediation using parameterized queries
+
+## Output Format
+
+Each finding should include:
+- severity: critical | high | medium
+- file_path, line_start
+- code_snippet
+- description
+- suggestion (parameterized query example)
+- dataflow_path (if traceable)
 ```
+
+> 注：上面示例中的三个反引号已转义显示，实际 SKILL.md 中使用标准 Markdown 代码围栏。
 
 ### 4.5 pipeline.yaml 完整示例（VulnHunter 扩展）
 
@@ -617,11 +722,23 @@ CREATE TABLE skills (
     version               VARCHAR(20) NOT NULL DEFAULT '1.0.0',
     description           TEXT,
 
-    -- OpenClaw 兼容层
-    openclaw_manifest     JSONB,          -- 原始 skill.yaml 内容
-    openclaw_instructions TEXT,           -- 原始 SKILL.md 内容
-    openclaw_source       VARCHAR(20),    -- builtin | clawhub | local
+    -- OpenClaw 兼容层（完整保留原始数据）
+    openclaw_skill_md     TEXT,           -- 原始 SKILL.md 完整内容
+    openclaw_meta_json    JSONB,          -- 原始 _meta.json
+    openclaw_manifest     JSONB,          -- 原始 skill.yaml (如有,仅 <1% 使用)
+    openclaw_source       VARCHAR(20),    -- builtin | clawhub | github | local
     openclaw_author       VARCHAR(100),
+    openclaw_skill_type   VARCHAR(10),    -- type_a | type_b | type_c
+
+    -- 运行时依赖（从 SKILL.md metadata + 文件中提取）
+    required_bins         JSONB DEFAULT '[]',  -- ["npm","pip","semgrep"]
+    supported_os          JSONB DEFAULT '[]',  -- ["linux","darwin"]
+    python_deps           TEXT,                 -- requirements.txt 原始内容
+    node_deps             JSONB,                -- package.json 原始内容
+
+    -- 脚本文件
+    script_files          JSONB DEFAULT '[]',  -- [{path,language,size}]
+    embedded_scripts      JSONB DEFAULT '[]',  -- [{language,code,context}] 从 MD 提取
 
     -- VulnHunter 管线
     pipeline_config       JSONB NOT NULL DEFAULT '{}',
@@ -1038,23 +1155,50 @@ GET    /skills/categories                 # Skill 类别列表
 
 #### POST /skills/import-openclaw
 
+从 ClawHub 导入（最常见）：
+
 ```json
 {
   "source": "clawhub",
-  "url": "https://github.com/openclaw/skills/tree/main/skills/author/skill-name",
-  "auto_generate_pipeline": true
+  "url": "https://github.com/openclaw/skills/tree/main/skills/aviclaw/slither-audit",
+  "options": {
+    "auto_generate_pipeline": true,
+    "execution_mode": "hybrid"
+  }
 }
 ```
 
-或：
+从粘贴内容导入（支持 SKILL.md + 附带脚本文件）：
 
 ```json
 {
-  "source": "local",
-  "skill_yaml": "name: my-skill\nversion: 1.0.0\n...",
-  "skill_md": "---\nname: my-skill\n---\n# Instructions\n..."
+  "source": "paste",
+  "skill_md": "---\nname: my-scanner\ndescription: Scan for vulns\n---\n# My Scanner\n...",
+  "files": {
+    "scan.py": "#!/usr/bin/env python3\nimport sys\n...",
+    "requirements.txt": "requests>=2.28.0\nbandit>=1.7.0"
+  }
 }
 ```
+
+响应会包含安全扫描结果和自动生成的管线：
+
+```json
+{
+  "id": "uuid",
+  "slug": "slither-audit",
+  "openclaw_skill_type": "type_b",
+  "script_files": [
+    {"path": "slither-audit.py", "language": "python", "size": 4184}
+  ],
+  "required_bins": ["pip", "slither"],
+  "pipeline_config": {"phases": [...]},
+  "security_scan": {"status": "passed", "checks": {"no_exfiltration": true}},
+  "import_warnings": ["Requires 'slither' binary in sandbox"]
+}
+```
+
+> 完整导入/导出/执行细节见 [SKILL_COMPATIBILITY.md](./SKILL_COMPATIBILITY.md)
 
 ### 6.6 Skill Profiles
 
