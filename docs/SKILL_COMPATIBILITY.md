@@ -1,141 +1,292 @@
 # VulnHunter × OpenClaw Skill 兼容性规格
 
-> **Version**: 0.2.0 — 基于 ClawHub 22,614 个 Skill 的实际分析  
+> **Version**: 0.3.0 — 基于 ClawHub 22,614 个 Skill 的实际分析  
 > **Date**: 2026-03-13  
 > **Related**: [SPEC.md](./SPEC.md)
 
 ---
 
-## 1. OpenClaw Skill 真实生态分析
+## 1. OpenClaw Skill 标准目录结构
 
-通过分析 `github.com/openclaw/skills` 仓库中的 22,614 个已发布 Skill，我们得出以下数据：
+**这是 OpenClaw Skill 的事实标准**，VulnHunter 必须完整兼容此结构：
 
-| 文件类型 | 数量 | 占比 |
-|---------|------|------|
-| 使用 `SKILL.md` 的 Skill | 22,614 | 100% |
-| 包含 Python 脚本 (`.py`) | 6,130 | 27.1% |
-| 包含 Shell 脚本 (`.sh`) | 3,795 | 16.8% |
-| 包含 JS/TS 脚本 | 3,266 | 14.4% |
-| 包含 `package.json` | 2,207 | 9.8% |
-| 包含 `requirements.txt` | 624 | 2.8% |
-| 使用 `skill.yaml` manifest | 214 | **0.9%** |
+```
+my-skill/
+├── SKILL.md          # 必选：指令 + 元数据 (YAML frontmatter)
+├── scripts/          # 可选：可执行脚本 (Python / Shell / JS / TS / ...)
+├── references/       # 可选：参考文档、知识库 (Markdown)
+└── assets/           # 可选：模板、配置样例、资源文件
+```
 
-**结论**: OpenClaw Skill 的事实标准是 `SKILL.md` + 可选的脚本文件，而不是 `skill.yaml` manifest。VulnHunter 必须以 `SKILL.md` 格式为第一优先级兼容。
+附加的可选文件（不属于标准目录，但大量存在）：
+
+```
+my-skill/
+├── _meta.json          # ClawHub 注册元数据 (owner, slug, version)
+├── package.json        # Node.js 依赖声明
+├── requirements.txt    # Python 依赖声明
+├── *.py / *.sh / *.js  # 根目录下的脚本（部分 Skill 不放在 scripts/ 里）
+└── README.md           # 补充说明
+```
+
+### ClawHub 生态数据（基于 22,614 个 Skill 分析）
+
+| 目录 / 文件 | 使用数量 | 占比 |
+|-------------|---------|------|
+| `SKILL.md` | 22,614 | 100% |
+| `scripts/` 目录 | 7,282 | 32.2% |
+| `references/` 目录 | 4,551 | 20.1% |
+| `assets/` 目录 | 614 | 2.7% |
+| 包含 `.py` 脚本 | 6,130 | 27.1% |
+| 包含 `.sh` 脚本 | 3,795 | 16.8% |
+| 包含 `.js` / `.ts` 脚本 | 3,266 | 14.4% |
+| `package.json` | 2,207 | 9.8% |
+| `requirements.txt` | 624 | 2.8% |
+| `skill.yaml` manifest | 214 | **< 1%** |
 
 ---
 
-## 2. OpenClaw Skill 的两种实际形态
+## 2. Skill 的四个组成部分
 
-### Type A: 纯 SKILL.md（Markdown Agent 指令）
+### 2.1 SKILL.md — 指令核心（必选）
 
-**最常见的形态**。只有一个 `SKILL.md` 文件，内容是 AI Agent 的行为指令。
+每个 Skill 的唯一必选文件。包含 YAML frontmatter（元数据）和 Markdown body（Agent 指令）。
+
+**Frontmatter**:
+
+```yaml
+---
+name: skill-security-audit
+description: >
+  Audit codebases for security issues. Use when scanning for vulnerabilities,
+  detecting hardcoded secrets, or reviewing OWASP top 10.
+metadata:
+  clawdbot:
+    emoji: "🔒"
+    requires:
+      anyBins: ["npm", "pip", "git", "semgrep"]
+    os: ["linux", "darwin"]
+tags: [security, vulnerability, owasp]
+---
+```
+
+**Body — 三种内容形态**:
+
+| 内容类型 | 说明 | VulnHunter 处理方式 |
+|---------|------|-------------------|
+| **自然语言指令** | 工作流步骤、判断逻辑、输出要求 | 注入 Agent system prompt |
+| **嵌入代码块** | ` ```bash ` / ` ```python ` 等 | 提取后在 Sandbox 执行 |
+| **脚本调用指令** | `python3 {SKILL_DIR}/scripts/scan.py` | 解析 `{SKILL_DIR}` → 调用 `scripts/` |
+
+关键约定：SKILL.md 中使用 **`{SKILL_DIR}`** 作为占位符引用 Skill 自身目录。
+
+### 2.2 scripts/ — 可执行脚本（可选）
+
+存放独立的可执行脚本文件，被 SKILL.md 中的指令引用。
 
 ```
-skill-directory/
-├── SKILL.md        # 核心：Agent 指令 + 嵌入的代码块
-└── _meta.json      # ClawHub 注册信息（可选）
+scripts/
+├── scan_skill.py        # Python 审计扫描器
+├── install.sh           # 安装/环境准备脚本
+├── audit.js             # Node.js 审计工具
+└── helpers.py           # 辅助函数
 ```
 
-**SKILL.md 结构**:
+**典型调用方式**（在 SKILL.md 中）:
 
 ```markdown
----
-name: security-audit
-description: Audit codebases for security issues. Use when scanning for vulnerabilities.
-metadata: {"clawdbot":{"emoji":"🔒","requires":{"anyBins":["npm","pip","git"]},"os":["linux","darwin"]}}
----
-
-# Security Audit
-
-## When to Use
-- Scanning project dependencies for known vulnerabilities
-- Detecting hardcoded secrets
-
-## Workflow
-1. 识别项目语言和框架
-2. 运行以下检测脚本...
-
-### 依赖扫描
+### Step 2: Run Automated Scanner
 
 ```bash
-npm audit --json
-pip-audit -r requirements.txt
+python3 {SKILL_DIR}/scripts/scan_skill.py <target-directory>
 ```
 
-### 密钥检测
+或带参数:
 
 ```bash
-grep -rn 'AKIA[0-9A-Z]{16}' --include='*.py' .
+python3 {SKILL_DIR}/scripts/scan_skill.py --slug <skill-slug> --version <version>
+```
 ```
 
-## Output Format
-- 严重程度: CRITICAL / HIGH / MEDIUM / LOW
-- 位置: file:line
-- 建议修复方案
-```
+**真实案例**: `tjefferson/skill-security-audit-2`
+- `scripts/scan_skill.py` — 585 行 Python，完整的安全扫描器
+  - 定义 80+ 恶意模式正则
+  - 扫描文件内容 → 输出 JSON 报告
+  - 支持从 ClawHub API 下载并扫描
+  - 命令行参数：`--slug`, `--version`, 目标目录
 
-**关键特征**:
-- SKILL.md 本身就是完整的 Skill
-- 嵌入的代码块（bash/python/js）是 Agent 在运行时"抄写并执行"的脚本
-- 没有独立的可执行文件——Markdown 就是全部
-- `metadata.clawdbot.requires.anyBins` 声明运行时需要的外部工具
+### 2.3 references/ — 参考文档（可选）
 
-**真实案例**: `kingrubic/agentic-security-audit`
-- 单个 SKILL.md 文件（30KB）
-- 包含 10+ 个完整 bash 审计脚本作为 Markdown 代码块
-- 覆盖 OWASP Top 10、密钥检测、依赖审计、SSL 验证等
-- Agent 阅读 Markdown 指令 → 按指令执行嵌入的脚本
-
-### Type B: SKILL.md + 独立脚本文件
-
-**第二常见的形态**。`SKILL.md` + 实际可执行的脚本文件。
+存放 Agent 可读的参考文档和知识库，用于增强 Agent 的分析能力。
 
 ```
-skill-directory/
-├── SKILL.md            # Agent 指令（如何使用这些脚本）
-├── _meta.json          # ClawHub 注册信息
-├── slither-audit.py    # 独立 Python 脚本
-└── detect.md           # 辅助文档（可选）
+references/
+├── threat_knowledge_base.md   # 安全威胁知识库
+├── owasp-top10.md             # OWASP Top 10 参考
+├── ERC-8004.md                # 规范文档
+└── macos-permissions.md       # 平台相关文档
 ```
 
-或带依赖管理：
+**VulnHunter 处理方式**: 将 references/ 下的 Markdown 文件索引到 RAG 知识库，在 Agent 分析时作为上下文检索源。
+
+### 2.4 assets/ — 资源文件（可选）
+
+存放模板、配置样例、数据文件等资源。
 
 ```
-skill-directory/
-├── SKILL.md
-├── _meta.json
-├── package.json        # Node.js 依赖
-├── requirements.txt    # Python 依赖
-├── scripts/
-│   └── audit.js        # 主脚本
-└── references/
-    └── spec.md         # 参考文档
+assets/
+├── config.example.yaml   # 配置模板
+├── report-template.html  # 报告模板
+└── rules.json            # 自定义规则数据
 ```
 
-**关键特征**:
-- SKILL.md 说明如何使用脚本（`python3 slither-audit.py /path`）
-- 脚本是独立可执行的 CLI 工具（接受参数、输出结果）
-- 可能有 `package.json` / `requirements.txt` 声明依赖
-- 脚本语言：Python（最多 6,130）、Shell（3,795）、JS/TS（3,266）
+**VulnHunter 处理方式**: 原样保留，脚本执行时可通过 `{SKILL_DIR}/assets/` 路径访问。
 
-**真实案例 1**: `aviclaw/slither-audit`
-- `SKILL.md`：使用说明
-- `slither-audit.py`：125 行 Python 脚本
-  - 调用 `slither` CLI 工具
-  - 解析 JSON 输出
-  - 生成 Markdown 审计报告
-  - 支持 `--format json` 和 `--format markdown`
+---
 
-**真实案例 2**: `aviclaw/agent-security-auditor`
-- `SKILL.md`：使用说明
-- `package.json`：声明依赖 `ethers@^6.13.0`
-- `scripts/audit.js`：593 行 Node.js 脚本
-  - 使用 ethers.js 查询链上数据
-  - 输出分级安全报告
+## 3. VulnHunter 对 Skill 各部分的兼容处理
 
-### Type C: skill.yaml Manifest（极少使用）
+### 3.1 整体架构
 
-仅 214 个 Skill（< 1%）使用。本规格仍然兼容此格式，但不以此为设计优先。
+```
+OpenClaw Skill 目录（来源：ClawHub / GitHub / 本地 / 粘贴）
+         │
+         ▼
+┌────────────────────────────────────────────────────────┐
+│                   Skill Loader                          │
+│                                                        │
+│  1. 检测目录结构                                        │
+│     ├── SKILL.md 存在?         → 必须                  │
+│     ├── scripts/ 存在?         → 标记 has_scripts       │
+│     ├── references/ 存在?      → 标记 has_references    │
+│     ├── assets/ 存在?          → 标记 has_assets        │
+│     ├── 根目录 *.py / *.sh?    → 收集为 root_scripts   │
+│     ├── package.json?          → 记录 node_deps        │
+│     └── requirements.txt?      → 记录 python_deps      │
+│                                                        │
+│  2. 解析 SKILL.md                                      │
+│     ├── frontmatter → name, description, metadata      │
+│     ├── 提取嵌入代码块 → embedded_scripts[]             │
+│     ├── 提取 {SKILL_DIR}/scripts/* 调用 → script_calls[] │
+│     └── 提取工作流步骤 → workflow_steps[]               │
+│                                                        │
+│  3. 清点 scripts/ 目录                                  │
+│     ├── 列出所有脚本文件及语言                           │
+│     └── 识别入口脚本 (main script)                      │
+│                                                        │
+│  4. 清点 references/ 目录                               │
+│     └── 列出所有 .md 文件 → 待索引到 RAG               │
+│                                                        │
+│  5. 清点 assets/ 目录                                   │
+│     └── 列出资源文件 → 运行时可访问                     │
+│                                                        │
+│  6. 安全扫描 (全部文件)                                 │
+│     └── 30+ 恶意模式检测                               │
+│                                                        │
+│  7. 自动生成 pipeline_config                            │
+│                                                        │
+│  8. 推断分类 (category / CWE / OWASP)                  │
+│                                                        │
+│  9. 存入数据库 + 复制文件到 data/skills/                │
+└────────────────────────────────────────────────────────┘
+```
+
+### 3.2 文件存储
+
+导入后的 Skill 完整保留原始目录结构：
+
+```
+data/skills/{openclaw_author}/{skill_slug}/
+├── SKILL.md                       # 原样保留
+├── _meta.json                     # 原样保留
+├── scripts/                       # 原样保留
+│   └── scan_skill.py
+├── references/                    # 原样保留
+│   └── threat_knowledge_base.md
+├── assets/                        # 原样保留
+│   └── config.example.yaml
+├── package.json                   # 原样保留
+├── requirements.txt               # 原样保留
+└── .vulnhunter/                   # VulnHunter 自动生成
+    ├── pipeline.yaml              # 自动生成的执行管线
+    ├── metadata.yaml              # 推断的分类信息
+    └── security_report.json       # 安全扫描报告
+```
+
+### 3.3 数据库 Skill 表
+
+```sql
+CREATE TABLE skills (
+    id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    slug                  VARCHAR(120) NOT NULL UNIQUE,
+    name                  VARCHAR(200) NOT NULL,
+    version               VARCHAR(20) NOT NULL DEFAULT '1.0.0',
+    description           TEXT,
+
+    -- OpenClaw 原始数据（完整保留）
+    openclaw_skill_md     TEXT,            -- SKILL.md 完整内容
+    openclaw_meta_json    JSONB,           -- _meta.json 内容
+    openclaw_source       VARCHAR(20),     -- builtin | clawhub | github | local
+    openclaw_author       VARCHAR(100),
+
+    -- 目录结构
+    has_scripts           BOOLEAN DEFAULT false,
+    has_references        BOOLEAN DEFAULT false,
+    has_assets            BOOLEAN DEFAULT false,
+    skill_dir_path        VARCHAR(500),    -- 文件系统中的完整路径
+
+    -- scripts/ 下的脚本文件
+    script_files          JSONB DEFAULT '[]',
+    -- [{path:"scripts/scan.py", language:"python", size:4184, is_entry:true}]
+
+    -- SKILL.md 中嵌入的代码块
+    embedded_scripts      JSONB DEFAULT '[]',
+    -- [{language:"bash", code:"...", context:"Step 1: Scan", is_executable:true}]
+
+    -- references/ 下的文档
+    reference_files       JSONB DEFAULT '[]',
+    -- [{path:"references/threat_kb.md", size:5200, indexed:true}]
+
+    -- assets/ 下的资源
+    asset_files           JSONB DEFAULT '[]',
+    -- [{path:"assets/config.yaml", size:1024}]
+
+    -- 运行时依赖
+    required_bins         JSONB DEFAULT '[]',   -- ["semgrep","pip","npm"]
+    supported_os          JSONB DEFAULT '[]',   -- ["linux","darwin"]
+    python_deps           TEXT,                  -- requirements.txt 内容
+    node_deps             JSONB,                 -- package.json 内容
+
+    -- VulnHunter 管线 (自动生成 / 手动配置)
+    pipeline_config       JSONB NOT NULL DEFAULT '{}',
+
+    -- 分类
+    category              VARCHAR(50) NOT NULL,
+    cwe_ids               JSONB DEFAULT '[]',
+    owasp_ids             JSONB DEFAULT '[]',
+    tags                  JSONB DEFAULT '[]',
+    supported_languages   JSONB DEFAULT '[]',
+    supported_frameworks  JSONB DEFAULT '[]',
+    severity_range        JSONB DEFAULT '[]',
+    icon                  VARCHAR(50),
+    color                 VARCHAR(7),
+
+    -- 可配置参数
+    parameters_schema     JSONB DEFAULT '[]',
+    dependencies          JSONB DEFAULT '[]',
+
+    -- 状态 / 统计
+    status                VARCHAR(20) NOT NULL DEFAULT 'active',
+    is_builtin            BOOLEAN DEFAULT false,
+    usage_count           INTEGER DEFAULT 0,
+    avg_exec_time_ms      REAL DEFAULT 0,
+    avg_findings          REAL DEFAULT 0,
+    author_id             UUID REFERENCES users(id),
+
+    created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+```
 
 ---
 
@@ -281,9 +432,233 @@ data/skills/imported/{openclaw_author}/{skill_slug}/
 
 ---
 
-## 5. Type A Skill 执行引擎（纯 Markdown）
+## 5. 统一 Skill 执行引擎
 
-### 5.1 处理流程
+### 5.1 执行前的环境准备
+
+无论 Skill 结构如何，执行前都需要完成以下准备：
+
+```
+┌────────────────────────────────────────────────────────┐
+│                 Sandbox 环境准备                        │
+│                                                        │
+│  1. 挂载 Skill 完整目录到 Sandbox                      │
+│     /skills/{slug}/  ← data/skills/{author}/{slug}/    │
+│     ├── SKILL.md                                       │
+│     ├── scripts/        (原样保留)                      │
+│     ├── references/     (原样保留)                      │
+│     └── assets/         (原样保留)                      │
+│                                                        │
+│  2. 挂载目标项目到 Sandbox                              │
+│     /project/  ← 项目源码                              │
+│                                                        │
+│  3. 安装依赖 (如有)                                     │
+│     pip install -r /skills/{slug}/requirements.txt     │
+│     cd /skills/{slug} && npm install --production      │
+│                                                        │
+│  4. 检查 required_bins                                  │
+│     which semgrep && which bandit && ...               │
+│                                                        │
+│  5. 索引 references/ 到 RAG (如有)                      │
+│     ChromaDB.index(/skills/{slug}/references/*.md)     │
+│                                                        │
+│  6. 设置环境变量                                        │
+│     SKILL_DIR=/skills/{slug}                           │
+│     PROJECT_PATH=/project                              │
+└────────────────────────────────────────────────────────┘
+```
+
+### 5.2 `{SKILL_DIR}` 占位符
+
+SKILL.md 中经常使用 `{SKILL_DIR}` 引用 Skill 自身目录。执行时替换为实际挂载路径：
+
+```python
+def resolve_skill_dir(command: str, skill_dir: str) -> str:
+    return command.replace("{SKILL_DIR}", skill_dir)
+    # python3 {SKILL_DIR}/scripts/scan.py /project
+    # → python3 /skills/my-skill/scripts/scan.py /project
+```
+
+### 5.3 统一执行路由
+
+```
+SKILL.md 解析
+    │
+    ├── 有 scripts/ & SKILL.md 引用了 {SKILL_DIR}/scripts/*?
+    │   └── YES → Script Execution 路径 (§5.4)
+    │
+    ├── 有嵌入代码块?
+    │   └── YES → Embedded Script 路径 (§5.5)
+    │
+    └── 纯自然语言指令
+        └── Pure Agent 路径 (§5.6)
+
+    ※ 三条路径不互斥，可组合为混合模式 (§5.7)
+    ※ references/ 始终索引到 RAG 供 Agent 检索
+    ※ assets/ 始终可通过 {SKILL_DIR}/assets/ 访问
+```
+
+### 5.4 Script Execution 路径（有 scripts/ 目录）
+
+当 Skill 有 `scripts/` 目录且 SKILL.md 中引用了脚本：
+
+```python
+async def execute_script_path(skill, project_ctx, sandbox):
+    """执行 scripts/ 中的脚本"""
+
+    # 1. 从 SKILL.md 解析执行命令
+    command = extract_script_command(skill.openclaw_skill_md)
+    # 典型: "python3 {SKILL_DIR}/scripts/scan_skill.py <target>"
+
+    # 2. 替换占位符
+    command = command.replace("{SKILL_DIR}", f"/skills/{skill.slug}")
+    command = command.replace("<target-directory>", "/project")
+    command = command.replace("<target>", "/project")
+    command = command.replace("$PROJECT_PATH", "/project")
+
+    # 3. 执行
+    result = await sandbox.exec(
+        command=command,
+        workdir="/project",
+        timeout=skill.timeout or 300,
+        env={"SKILL_DIR": f"/skills/{skill.slug}", "PROJECT_PATH": "/project"},
+    )
+
+    # 4. 解析输出
+    return await parse_skill_output(result.stdout, result.stderr, skill)
+```
+
+**命令推断优先级**:
+1. SKILL.md 中 "Usage" / "Quick Start" / "Step N: Run" 段落中的命令
+2. `package.json` 的 `scripts.audit` / `scripts.scan` / `scripts.start`
+3. 按 `scripts/` 中的主脚本文件类型推断
+
+### 5.5 Embedded Script 路径（SKILL.md 嵌入代码块）
+
+当 SKILL.md body 中包含可执行的代码块：
+
+```python
+async def execute_embedded_path(skill, project_ctx, sandbox):
+    """提取并执行 SKILL.md 中嵌入的代码块"""
+
+    embedded = extract_embedded_scripts(skill.openclaw_skill_md)
+    all_findings = []
+
+    for script in embedded:
+        if not script.is_executable:
+            continue
+
+        if script.language in ('bash', 'sh'):
+            # 替换变量后直接执行
+            code = script.code.replace("$PROJECT_PATH", "/project")
+            result = await sandbox.exec(f"bash -c '{code}'", workdir="/project")
+
+        elif script.language == 'python':
+            await sandbox.write_file("/tmp/_embedded.py", script.code)
+            result = await sandbox.exec("python3 /tmp/_embedded.py /project")
+
+        elif script.language in ('javascript', 'js'):
+            await sandbox.write_file("/tmp/_embedded.js", script.code)
+            result = await sandbox.exec("node /tmp/_embedded.js /project")
+
+        findings = await parse_script_output(result.stdout, result.stderr, skill)
+        all_findings.extend(findings)
+
+    return all_findings
+```
+
+### 5.6 Pure Agent 路径（纯自然语言指令）
+
+将 SKILL.md 完整内容注入 Agent system prompt：
+
+```python
+async def execute_agent_path(skill, project_ctx, prior_findings=None):
+    """Agent 阅读 SKILL.md 指令并自主执行"""
+
+    system_prompt = f"""你是一个安全审计 Agent。
+请严格按照以下 Skill 指令对目标项目进行审计：
+
+--- SKILL 指令 ---
+{skill.openclaw_skill_md}
+--- 指令结束 ---
+
+目标项目: {project_ctx.project_path}
+语言: {project_ctx.languages}
+框架: {project_ctx.frameworks}
+"""
+    if prior_findings:
+        system_prompt += f"\n已有的初步发现（请在此基础上深入分析）:\n{format_findings(prior_findings)}"
+
+    # references/ 中的文档已索引到 RAG，Agent 可通过 rag_query 检索
+    tools = [file_read, search_code, rag_query, sandbox_exec]
+
+    agent = build_analysis_agent(system_prompt=system_prompt, tools=tools, max_iterations=20)
+    return await agent.run()
+```
+
+### 5.7 混合模式（推荐）
+
+组合多条路径，获得最全面的审计结果：
+
+```python
+async def execute_skill(skill, project_ctx):
+    """统一入口：根据 Skill 结构自动选择执行路径"""
+
+    sandbox = await get_sandbox()
+    await prepare_sandbox(sandbox, skill, project_ctx)  # 环境准备 (§5.1)
+
+    findings = []
+
+    # Phase 1: 执行 scripts/ (如有)
+    if skill.has_scripts and has_script_calls(skill.openclaw_skill_md):
+        script_results = await execute_script_path(skill, project_ctx, sandbox)
+        findings.extend(script_results)
+
+    # Phase 2: 执行嵌入代码块 (如有)
+    embedded = extract_embedded_scripts(skill.openclaw_skill_md)
+    executable_blocks = [s for s in embedded if s.is_executable]
+    if executable_blocks:
+        embedded_results = await execute_embedded_path(skill, project_ctx, sandbox)
+        findings.extend(embedded_results)
+
+    # Phase 3: Agent 深度分析（始终执行，利用 references/ 知识 + 前序结果）
+    agent_results = await execute_agent_path(skill, project_ctx, prior_findings=findings)
+    findings.extend(agent_results)
+
+    # 去重
+    return deduplicate_findings(findings)
+```
+
+### 5.8 references/ 索引到 RAG
+
+```python
+async def index_references(skill, rag_indexer):
+    """将 references/ 下的文档索引到 ChromaDB"""
+    if not skill.has_references:
+        return
+
+    for ref_file in skill.reference_files:
+        content = read_file(f"{skill.skill_dir_path}/{ref_file['path']}")
+        await rag_indexer.index_document(
+            content=content,
+            metadata={
+                "source": f"skill:{skill.slug}",
+                "type": "reference",
+                "file": ref_file["path"],
+            },
+            collection=f"skill_{skill.slug}_refs",
+        )
+```
+
+Agent 在分析时可通过 `rag_query` 工具检索 references/ 中的知识：
+
+```
+Agent: 我需要了解 ClawHavoc 攻击模式的详细信息
+Tool: rag_query("ClawHavoc attack patterns supply chain")
+→ 返回 references/threat_knowledge_base.md 中的相关段落
+```
+
+### 5.9 处理流程
 
 ```
 SKILL.md
@@ -457,131 +832,6 @@ async def execute_type_a_hybrid(skill, project_context):
 ```
 
 ---
-
-## 6. Type B Skill 执行引擎（有独立脚本）
-
-### 6.1 处理流程
-
-```
-Skill 目录
-    │
-    ├── 1. 环境准备
-    │   ├── 检查 required_bins 是否在 Sandbox 中可用
-    │   ├── 安装 Python 依赖 (pip install -r requirements.txt)
-    │   ├── 安装 Node 依赖 (npm install / pnpm install)
-    │   └── 复制 Skill 文件到 Sandbox
-    │
-    ├── 2. 解析 SKILL.md 获取执行命令
-    │   ├── 从 "Usage" / "Quick Start" 段落提取命令
-    │   │   例: "python3 slither-audit.py /path/to/contracts/"
-    │   ├── 或从 package.json 的 scripts 字段获取
-    │   │   例: "npm run audit"
-    │   └── 或基于文件类型推断
-    │       .py → python3 {file} {project_path}
-    │       .js → node {file} {project_path}
-    │       .sh → bash {file} {project_path}
-    │
-    ├── 3. 在 Sandbox 中执行
-    │   ├── 设置工作目录为项目路径
-    │   ├── 设置超时（默认 300s）
-    │   ├── 捕获 stdout / stderr / exit_code
-    │   └── 如果支持 --format json，优先使用
-    │
-    └── 4. 输出解析
-        ├── 尝试 JSON 解析 → structured findings
-        ├── 尝试 SARIF 解析
-        ├── 尝试结构化文本解析（severity + file:line + message）
-        └── fallback: LLM 从自由文本中提取 findings
-```
-
-### 6.2 实现
-
-```python
-async def execute_type_b(skill, project_context):
-    """执行 Type B Skill（带独立脚本文件）"""
-
-    sandbox = await get_sandbox()
-
-    # 1. 复制 Skill 文件到 Sandbox
-    skill_dir = f"/skills/{skill.slug}"
-    await sandbox.copy_directory(
-        src=skill.local_path,
-        dst=skill_dir,
-    )
-
-    # 2. 安装依赖
-    if skill.python_deps:
-        await sandbox.exec(
-            f"pip install -r {skill_dir}/requirements.txt",
-            timeout=120,
-        )
-    if skill.node_deps:
-        await sandbox.exec(
-            f"cd {skill_dir} && npm install --production",
-            timeout=120,
-        )
-
-    # 3. 构造执行命令
-    command = build_execution_command(skill, project_context)
-    # 例: "python3 /skills/slither-audit/slither-audit.py /project --format json"
-    # 例: "cd /skills/agent-security-auditor && node scripts/audit.js 0x..."
-
-    # 4. 执行
-    result = await sandbox.exec(
-        command=command,
-        workdir=project_context.project_path,
-        timeout=skill.timeout or 300,
-        env={
-            "PROJECT_PATH": project_context.project_path,
-            **skill.env_vars,
-        },
-    )
-
-    # 5. 解析输出
-    findings = await parse_skill_output(
-        stdout=result.stdout,
-        stderr=result.stderr,
-        exit_code=result.exit_code,
-        skill=skill,
-    )
-
-    return findings
-
-
-def build_execution_command(skill, project_context) -> str:
-    """
-    从 SKILL.md 或文件结构推断执行命令
-
-    优先级:
-    1. SKILL.md 中的 Usage/Quick Start 段落里的命令模式
-    2. package.json 的 scripts.audit / scripts.scan / scripts.start
-    3. 基于主脚本文件的类型推断
-    """
-
-    # 1. 从 SKILL.md 解析
-    usage_cmd = extract_usage_command(skill.openclaw_instructions)
-    if usage_cmd:
-        return interpolate_command(usage_cmd, skill, project_context)
-
-    # 2. 从 package.json 解析
-    if skill.node_deps:
-        pkg = skill.node_deps
-        for script_name in ['audit', 'scan', 'start', 'main']:
-            if script_name in pkg.get('scripts', {}):
-                return f"cd /skills/{skill.slug} && npm run {script_name}"
-        if pkg.get('main'):
-            return f"node /skills/{skill.slug}/{pkg['main']} {project_context.project_path}"
-
-    # 3. 基于文件类型推断
-    main_script = find_main_script(skill.script_files)
-    if main_script:
-        ext = main_script.rsplit('.', 1)[-1]
-        runners = {'py': 'python3', 'js': 'node', 'ts': 'npx tsx', 'sh': 'bash'}
-        runner = runners.get(ext, 'bash')
-        return f"{runner} /skills/{skill.slug}/{main_script} {project_context.project_path}"
-
-    raise SkillExecutionError(f"Cannot determine execution command for skill {skill.slug}")
-```
 
 ### 6.3 输出解析器
 
