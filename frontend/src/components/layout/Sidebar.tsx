@@ -23,6 +23,7 @@ import {
     Shield,
     MessageSquare,
     Bot,
+    FolderCode,
 } from "lucide-react";
 import routes from "@/app/routes";
 import { version } from "../../../package.json";
@@ -30,6 +31,7 @@ import { version } from "../../../package.json";
 // Icon mapping for routes with consistent sizing
 const routeIcons: Record<string, React.ReactNode> = {
     "/": <Bot className="w-[18px] h-[18px]" />,
+    "/opencode-audit": <FolderCode className="w-[18px] h-[18px]" />,
     "/dashboard": <LayoutDashboard className="w-[18px] h-[18px]" />,
     "/projects": <FolderGit2 className="w-[18px] h-[18px]" />,
     "/instant-analysis": <Zap className="w-[18px] h-[18px]" />,

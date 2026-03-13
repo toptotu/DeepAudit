@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { Terminal, Bot, Loader2, Radio, Filter, Maximize2, ArrowDown } from "lucide-react";
+import { Terminal, Bot, Loader2, Radio, Filter, Maximize2, ArrowDown, ListChecks } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useAgentStream } from "@/hooks/useAgentStream";
@@ -20,6 +20,7 @@ import {
   AgentEvent,
 } from "@/shared/api/agentTasks";
 import CreateAgentTaskDialog from "@/components/agent/CreateAgentTaskDialog";
+import IssueManagementPanel from "@/components/findings/IssueManagementPanel";
 
 // Local imports
 import {
@@ -56,6 +57,7 @@ function AgentAuditPageContent() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [statusVerb, setStatusVerb] = useState(ACTION_VERBS[0]);
   const [statusDots, setStatusDots] = useState(0);
+  const [rightPanelTab, setRightPanelTab] = useState<"tree" | "issues">("tree");
 
   const logEndRef = useRef<HTMLDivElement>(null);
   const agentTreeRefreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -923,83 +925,128 @@ function AgentAuditPageContent() {
           )}
         </div>
 
-        {/* Right Panel - Agent Tree + Stats */}
+        {/* Right Panel - Agent Tree + Issue Management + Stats */}
         <div className="w-1/4 flex flex-col bg-background relative">
-          {/* Agent Tree section */}
-          <div className="flex-1 flex flex-col border-b border-border overflow-hidden">
-            {/* Tree header */}
-            <div className="flex-shrink-0 h-12 border-b border-border flex items-center justify-between px-4 bg-card">
-              <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
-                <Bot className="w-4 h-4 text-violet-600 dark:text-violet-500" />
-                <span className="uppercase font-bold tracking-wider text-foreground text-sm">
-                  {selectedAgentId && !showAllLogs ? 'Agent Detail' : 'Agent Tree'}
-                </span>
-                {!selectedAgentId && agentTree && (
-                  <Badge variant="outline" className="h-5 px-2 text-xs border-violet-500/30 text-violet-600 dark:text-violet-500 font-mono bg-violet-500/10">
-                    {agentTree.total_agents}
-                  </Badge>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                {selectedAgentId && !showAllLogs && (
-                  <button
-                    onClick={() => selectAgent(null)}
-                    className="text-xs text-primary hover:text-primary/80 font-mono uppercase px-2 py-1 rounded hover:bg-primary/10"
-                  >
-                    Back
-                  </button>
-                )}
-                {!selectedAgentId && agentTree && agentTree.running_agents > 0 && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-semibold">{agentTree.running_agents}</span>
-                  </div>
-                )}
-              </div>
-            </div>
+          {/* Tab switcher header */}
+          <div className="flex-shrink-0 h-12 border-b border-border flex items-center px-3 bg-card gap-1">
+            <button
+              onClick={() => setRightPanelTab("tree")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono uppercase tracking-wider transition-colors ${
+                rightPanelTab === "tree"
+                  ? "bg-primary/10 text-primary border border-primary/30"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
+              }`}
+            >
+              <Bot className="w-3.5 h-3.5" />
+              Agent Tree
+              {agentTree && (
+                <span className="text-[10px] opacity-70">{agentTree.total_agents}</span>
+              )}
+            </button>
+            <button
+              onClick={() => setRightPanelTab("issues")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono uppercase tracking-wider transition-colors ${
+                rightPanelTab === "issues"
+                  ? "bg-primary/10 text-primary border border-primary/30"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
+              }`}
+            >
+              <ListChecks className="w-3.5 h-3.5" />
+              Issues
+              {findings.length > 0 && (
+                <span className="text-[10px] opacity-70">{findings.length}</span>
+              )}
+            </button>
+          </div>
 
-            {/* Tree content or Agent Detail */}
-            <div className="flex-1 overflow-y-auto p-3 custom-scrollbar bg-muted/20">
-              {selectedAgentId && !showAllLogs ? (
-                /* Agent Detail Panel - 覆盖整个内容区域 */
-                <AgentDetailPanel
-                  agentId={selectedAgentId}
-                  treeNodes={treeNodes}
-                  onClose={() => selectAgent(null)}
-                />
-              ) : treeNodes.length > 0 ? (
-                <div className="space-y-0.5">
-                  {treeNodes.map(node => (
-                    <AgentTreeNodeItem
-                      key={node.agent_id}
-                      node={node}
-                      selectedId={selectedAgentId}
-                      onSelect={handleAgentSelect}
-                    />
-                  ))}
+          {rightPanelTab === "tree" ? (
+            <>
+              {/* Agent Tree section */}
+              <div className="flex-1 flex flex-col border-b border-border overflow-hidden">
+                {/* Tree inner header */}
+                <div className="flex-shrink-0 h-9 border-b border-border flex items-center justify-between px-4 bg-card/50">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="uppercase font-semibold tracking-wider text-foreground text-xs">
+                      {selectedAgentId && !showAllLogs ? 'Agent Detail' : 'Agent Tree'}
+                    </span>
+                    {!selectedAgentId && agentTree && (
+                      <Badge variant="outline" className="h-4 px-1.5 text-[10px] border-violet-500/30 text-violet-600 dark:text-violet-500 font-mono bg-violet-500/10">
+                        {agentTree.total_agents}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {selectedAgentId && !showAllLogs && (
+                      <button
+                        onClick={() => selectAgent(null)}
+                        className="text-xs text-primary hover:text-primary/80 font-mono uppercase px-2 py-1 rounded hover:bg-primary/10"
+                      >
+                        Back
+                      </button>
+                    )}
+                    {!selectedAgentId && agentTree && agentTree.running_agents > 0 && (
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-semibold">{agentTree.running_agents}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ) : (
-                <div className="h-full flex items-center justify-center text-muted-foreground text-xs">
-                  {isRunning ? (
-                    <div className="flex flex-col items-center gap-3 p-6">
-                      <Loader2 className="w-6 h-6 animate-spin text-violet-600 dark:text-violet-500" />
-                      <span className="font-mono text-center">INITIALIZING<br/>AGENTS...</span>
+
+                {/* Tree content or Agent Detail */}
+                <div className="flex-1 overflow-y-auto p-3 custom-scrollbar bg-muted/20">
+                  {selectedAgentId && !showAllLogs ? (
+                    <AgentDetailPanel
+                      agentId={selectedAgentId}
+                      treeNodes={treeNodes}
+                      onClose={() => selectAgent(null)}
+                    />
+                  ) : treeNodes.length > 0 ? (
+                    <div className="space-y-0.5">
+                      {treeNodes.map(node => (
+                        <AgentTreeNodeItem
+                          key={node.agent_id}
+                          node={node}
+                          selectedId={selectedAgentId}
+                          onSelect={handleAgentSelect}
+                        />
+                      ))}
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center gap-2 p-6 text-center">
-                      <Bot className="w-8 h-8 text-muted-foreground/50" />
-                      <span className="font-mono">NO AGENTS YET</span>
+                    <div className="h-full flex items-center justify-center text-muted-foreground text-xs">
+                      {isRunning ? (
+                        <div className="flex flex-col items-center gap-3 p-6">
+                          <Loader2 className="w-6 h-6 animate-spin text-violet-600 dark:text-violet-500" />
+                          <span className="font-mono text-center">INITIALIZING<br/>AGENTS...</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2 p-6 text-center">
+                          <Bot className="w-8 h-8 text-muted-foreground/50" />
+                          <span className="font-mono">NO AGENTS YET</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Bottom section - Stats */}
+              <div className="flex-shrink-0 p-4 bg-card">
+                <StatsPanel task={task} findings={findings} />
+              </div>
+            </>
+          ) : (
+            /* Issue Management Panel */
+            <div className="flex-1 overflow-hidden">
+              {taskId ? (
+                <IssueManagementPanel taskId={taskId} initialFindings={findings} />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                  请先选择或创建一个审计任务
+                </div>
               )}
             </div>
-          </div>
-
-          {/* Bottom section - Stats */}
-          <div className="flex-shrink-0 p-4 bg-card">
-            <StatsPanel task={task} findings={findings} />
-          </div>
+          )}
         </div>
       </div>
 

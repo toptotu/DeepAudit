@@ -6,6 +6,7 @@ import InstantAnalysis from "@/pages/InstantAnalysis";
 import AuditTasks from "@/pages/AuditTasks";
 import TaskDetail from "@/pages/TaskDetail";
 import AgentAudit from "@/pages/AgentAudit";
+import OpenCodeAudit from "@/pages/OpenCodeAudit";
 import AdminDashboard from "@/pages/AdminDashboard";
 import Account from "@/pages/Account";
 import AuditRules from "@/pages/AuditRules";
@@ -31,6 +32,12 @@ const routes: RouteConfig[] = [
     path: "/agent-audit/:taskId",
     element: <AgentAudit />,
     visible: false,
+  },
+  {
+    name: "OpenCode审计",
+    path: "/opencode-audit",
+    element: <OpenCodeAudit />,
+    visible: true,
   },
   {
     name: "仪表盘",
